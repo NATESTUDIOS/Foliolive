@@ -3,20 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Folio — Code anywhere, ship from your phone</title>
-<meta name="description" content="Folio is a mobile-first code editor with real deployment, offline support, and a private API runtime.">
+<title>Shortlinks — Folio Admin</title>
 <meta name="theme-color" content="#0a0c10">
-<meta name="robots" content="index,follow">
-<link rel="canonical" href="https://foliosites.vercel.app/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Folio — Code anywhere, ship from your phone">
-<meta property="og:description" content="A mobile-first code editor with real deployment, offline support, and a private API runtime.">
-<meta property="og:image" content="https://foliostudios.vercel.app/icons/icon.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="1200">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://foliostudios.vercel.app/icons/icon.jpg">
+<meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="https://foliostudios.vercel.app/icons/icon.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,1321 +17,931 @@
 :root{
   color-scheme:dark;
   --bg:#0a0c10;
+  --surface:#0f1218;
+  --surface-2:#151922;
+  --surface-3:#1a1f2a;
   --primary:#F59E0B;
   --primary-hover:#fbbf24;
   --primary-glow:rgba(245,158,11,0.4);
+  --primary-soft:rgba(245,158,11,0.14);
   --text:#e8ecf1;
+  --text-2:rgba(232,236,241,0.72);
+  --text-3:rgba(232,236,241,0.44);
+  --glass:rgba(255,255,255,0.05);
+  --glass-border:rgba(255,255,255,0.09);
+  --divider:rgba(255,255,255,0.08);
+  --danger:#EF4444;
+  --danger-soft:rgba(239,68,68,0.14);
+  --warning:#D97706;
+  --warning-soft:rgba(217,119,6,0.16);
+  --success:#10B981;
+  --success-soft:rgba(16,185,129,0.14);
   --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
   --font-mono:'JetBrains Mono','SF Mono',Consolas,monospace;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
+  --ease:cubic-bezier(0.16,1,0.3,1);
 }
 html,body{
   background:var(--bg);
   color:var(--text);
   font-family:var(--font);
-  font-size:16px;
-  height:100vh;
-  height:100dvh;
-  overflow:hidden;
+  font-size:14px;
+  min-height:100vh;
   -webkit-font-smoothing:antialiased;
   -webkit-tap-highlight-color:transparent;
-  overscroll-behavior:none;
-  user-select:none;
+}
+body{
+  background:
+    radial-gradient(circle at 50% -20%, rgba(245,158,11,0.10) 0%, transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(168,85,247,0.05) 0%, transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-a{color:inherit;text-decoration:none}
+a{color:var(--primary);text-decoration:none}
 svg{display:block}
+.hidden{display:none!important}
 
-/* ═══════════════════════════════════════════════════════
-   STAGE
-   ═══════════════════════════════════════════════════════ */
-#stage{
-  position:fixed;
-  inset:0;
+/* Layout */
+.app{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  min-height:100vh;
+}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+}
+
+/* Sidebar */
+.sidebar{
+  background:var(--surface);
+  border-right:1px solid var(--glass-border);
+  padding:20px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+}
+@media (max-width:900px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;z-index:30;transform:translateX(-100%);transition:transform 0.3s var(--ease)}
+  .sidebar.open{transform:translateX(0)}
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px 20px;
+  border-bottom:1px solid var(--divider);
+  margin-bottom:12px;
+}
+.brand img{width:32px;height:32px;border-radius:8px}
+.brand-text{display:flex;flex-direction:column;gap:2px}
+.brand-name{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-0.02em}
+.brand-sub{font-size:10px;color:var(--text-3);font-weight:600;letter-spacing:0.05em;text-transform:uppercase}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 12px;
+  border-radius:8px;
+  color:var(--text-2);
+  font-size:13px;
+  font-weight:600;
+  transition:all 0.15s var(--ease);
+  text-align:left;
+  width:100%;
+}
+.nav-item:hover{background:var(--glass);color:var(--text)}
+.nav-item.active{background:var(--primary-soft);color:var(--primary)}
+.nav-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nav-item .badge{
+  margin-left:auto;
+  padding:1px 6px;
+  border-radius:4px;
+  font-size:9.5px;
+  font-weight:800;
+  background:var(--primary);
+  color:#0a0c10;
+  min-width:18px;
+  text-align:center;
+}
+
+.nav-section{
+  font-size:9.5px;
+  font-weight:800;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  padding:16px 12px 6px;
+}
+
+/* Main */
+.main{
+  padding:24px 32px;
+  max-width:1400px;
+  width:100%;
+  overflow-y:auto;
+}
+@media (max-width:900px){
+  .main{padding:16px}
+  .mobile-header{display:flex!important}
+}
+.mobile-header{
+  display:none;
+  align-items:center;
+  gap:12px;
+  padding:12px 0 16px;
+  border-bottom:1px solid var(--divider);
+  margin-bottom:16px;
+}
+.mobile-header button{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--glass);border:1px solid var(--glass-border)}
+.mobile-header button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
+
+.page-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+}
+.page-title{
+  font-size:26px;
+  font-weight:800;
+  color:var(--text);
+  letter-spacing:-0.03em;
+  line-height:1.1;
+  margin-bottom:4px;
+}
+.page-sub{
+  font-size:13px;
+  color:var(--text-3);
+  font-weight:500;
+  line-height:1.5;
+  max-width:600px;
+}
+.page-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+@media (max-width:600px){
+  .page-title{font-size:20px}
+  .page-actions{width:100%}
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:9px 16px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:700;
+  transition:all 0.15s var(--ease);
+  border:1px solid transparent;
+  min-height:36px;
+  white-space:nowrap;
+}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.btn-primary{background:var(--primary);color:#0a0c10}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-secondary{background:var(--surface-2);color:var(--text);border-color:var(--glass-border)}
+.btn-secondary:hover{background:var(--surface-3);border-color:var(--primary-glow)}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border-color:rgba(239,68,68,0.3)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--text-2)}
+.btn-ghost:hover{background:var(--glass);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px;min-height:30px}
+.btn-sm svg{width:12px;height:12px}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* Cards */
+.card{
+  background:var(--surface-2);
+  border:1px solid var(--glass-border);
+  border-radius:12px;
   overflow:hidden;
-  background:#0a0c10;
+  margin-bottom:16px;
 }
+.card-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 20px;
+  border-bottom:1px solid var(--divider);
+  flex-wrap:wrap;
+}
+.card-title{
+  font-size:14px;
+  font-weight:800;
+  color:var(--text);
+  letter-spacing:-0.01em;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.card-title svg{width:16px;height:16px;stroke:var(--primary);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.card-body{padding:20px}
+.card-body.tight{padding:0}
 
-.scene{
-  position:absolute;
-  inset:0;
+/* Stats */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  margin-bottom:24px;
+}
+.stat-card{
+  background:var(--surface-2);
+  border:1px solid var(--glass-border);
+  border-radius:12px;
+  padding:16px 18px;
+  position:relative;
   overflow:hidden;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 1.2s ease;
 }
-.scene.active{opacity:1}
-
-/* ═══════════════════════════════════════════════════════
-   SKY
-   ═══════════════════════════════════════════════════════ */
-.sky{position:absolute;inset:0;z-index:1}
-
-#scene-town .sky{
-  background:
-    radial-gradient(ellipse 90% 60% at 60% 20%, rgba(255,215,170,0.85) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 45% at 20% 35%, rgba(180,200,240,0.55) 0%, transparent 60%),
-    linear-gradient(180deg, #7C9CB8 0%, #A8B8C8 40%, #E8C8A0 75%, #F4DAB0 100%);
-}
-#scene-forest .sky{
-  background:
-    radial-gradient(ellipse 80% 55% at 40% 25%, rgba(220,240,200,0.6) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 80% 40%, rgba(160,200,180,0.4) 0%, transparent 60%),
-    linear-gradient(180deg, #A8C0C0 0%, #B8D0C0 40%, #D0D8C0 70%, #E8E0C0 100%);
-}
-#scene-desert .sky{
-  background:
-    radial-gradient(ellipse 85% 55% at 50% 15%, rgba(255,240,200,0.95) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 75% 40%, rgba(255,200,140,0.6) 0%, transparent 60%),
-    linear-gradient(180deg, #5BA5C9 0%, #A8C8D8 35%, #F0C890 70%, #F4C070 100%);
-}
-#scene-savannah .sky{
-  background:
-    radial-gradient(ellipse 100% 65% at 30% 50%, rgba(255,150,80,0.85) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 45% at 80% 60%, rgba(255,120,140,0.45) 0%, transparent 60%),
-    linear-gradient(180deg, #C06080 0%, #E89070 35%, #F4B860 70%, #F4D090 100%);
-}
-#scene-city .sky{
-  background:
-    radial-gradient(ellipse 90% 55% at 50% 15%, rgba(80,100,180,0.5) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 85% 40%, rgba(245,158,11,0.2) 0%, transparent 60%),
-    linear-gradient(180deg, #0a0812 0%, #14102a 40%, #1a1a30 70%, #0e1420 100%);
-}
-
-.celestial{
+.stat-card::before{
+  content:'';
   position:absolute;
-  border-radius:50%;
-  z-index:2;
-}
-#scene-town .celestial{
-  top:14%;right:20%;width:100px;height:100px;
-  background:radial-gradient(circle at 38% 38%, #FFFEF0 0%, #FFF4C4 40%, #FFD58A 75%, transparent 100%);
-  box-shadow:0 0 100px rgba(255,240,200,0.9),0 0 200px rgba(255,220,150,0.5);
-}
-#scene-forest .celestial{
-  top:12%;right:22%;width:80px;height:80px;
-  background:radial-gradient(circle at 40% 40%, #FFFCF0 0%, #E8F0D0 40%, #C0D0A0 75%, transparent 100%);
-  box-shadow:0 0 80px rgba(220,240,200,0.7);
-}
-#scene-desert .celestial{
-  top:10%;right:25%;width:110px;height:110px;
-  background:radial-gradient(circle at 40% 40%, #FFFBEA 0%, #FFF0B8 35%, #F4A020 75%, transparent 100%);
-  box-shadow:0 0 160px rgba(255,220,140,0.95),0 0 300px rgba(255,180,80,0.6);
-}
-#scene-savannah .celestial{
-  bottom:28%;right:20%;width:120px;height:120px;
-  background:radial-gradient(circle at 40% 40%, #FFE8C0 0%, #FFB060 40%, #E86040 80%, transparent 100%);
-  box-shadow:0 0 140px rgba(255,180,100,0.9),0 0 260px rgba(255,120,80,0.5);
-}
-#scene-city .celestial{
-  top:12%;right:20%;width:70px;height:70px;
-  background:radial-gradient(circle at 38% 38%, #F0F4FF 0%, #C8D8F0 40%, #7A9AC0 80%, transparent 100%);
-  box-shadow:0 0 80px rgba(220,230,255,0.7);
-}
-
-.stars{position:absolute;inset:0;z-index:2;pointer-events:none}
-.star{
-  position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
-  animation:twinkle 3s ease-in-out infinite;
-}
-@keyframes twinkle{
-  0%,100%{opacity:0.3;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.3)}
-}
-
-.clouds{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}
-.cloud{
-  position:absolute;border-radius:50%;
-  filter:blur(8px);animation:cloud-drift linear infinite;
-}
-@keyframes cloud-drift{
-  from{transform:translateX(-30vw)}
-  to{transform:translateX(130vw)}
-}
-
-/* ═══════════════════════════════════════════════════════
-   GROUND + SCENERY
-   ═══════════════════════════════════════════════════════ */
-#scene-town .far-skyline{
-  position:absolute;bottom:40%;left:-10%;width:120%;height:38%;
-  z-index:4;opacity:0.4;filter:blur(3px);
-}
-#scene-town .far-skyline svg{width:100%;height:100%}
-#scene-town .far-skyline path{fill:#8B95B0}
-
-#scene-town .mid-skyline{
-  position:absolute;bottom:34%;left:-5%;width:110%;height:36%;
-  z-index:5;opacity:0.7;
-}
-#scene-town .mid-skyline svg{width:100%;height:100%}
-#scene-town .mid-skyline path{fill:#6B7080}
-#scene-town .mid-skyline .win{
-  fill:rgba(255,240,200,0.5);
-  animation:win-flicker 5s ease-in-out infinite;
-}
-@keyframes win-flicker{0%,100%{opacity:0.9}50%{opacity:0.5}}
-
-#scene-town .ground{
-  position:absolute;bottom:0;left:0;right:0;height:36%;z-index:6;
-  background:linear-gradient(180deg, rgba(120,110,100,0.9) 0%, rgba(80,70,60,0.95) 40%, #3a3028 100%);
-}
-
-#scene-forest .ground{
-  position:absolute;bottom:0;left:0;right:0;height:38%;z-index:6;
-  background:linear-gradient(180deg, rgba(70,110,60,0.95) 0%, rgba(40,70,35,0.98) 40%, #1a2e18 100%);
-}
-
-#scene-forest .path{
-  position:absolute;bottom:0;left:0;right:0;height:38%;z-index:7;
-  clip-path:polygon(0 100%, 30% 40%, 55% 35%, 80% 42%, 100% 100%);
-  background:linear-gradient(180deg, transparent 0%, rgba(80,60,40,0.5) 40%, rgba(50,35,20,0.9) 100%);
-}
-
-#scene-forest .tree{
-  position:absolute;bottom:30%;z-index:8;
-  width:clamp(50px,8vw,110px);height:clamp(120px,22vw,240px);
-  transform-origin:bottom center;
-  animation:tree-sway 5s ease-in-out infinite;
-}
-#scene-forest .tree:nth-child(odd){animation-delay:-2s}
-@keyframes tree-sway{
-  0%,100%{transform:rotate(-0.8deg)}
-  50%{transform:rotate(0.8deg)}
-}
-#scene-forest .tree svg{width:100%;height:100%}
-
-#scene-desert .dune{
-  position:absolute;left:-10%;right:-10%;
-  border-radius:50% 50% 0 0 / 100% 100% 0 0;
-  z-index:4;
-}
-#scene-desert .dune-1{bottom:38%;height:22%;background:linear-gradient(180deg,#E8A050 0%,#C86A3A 100%);opacity:0.85}
-#scene-desert .dune-2{bottom:26%;height:26%;background:linear-gradient(180deg,#D08840 0%,#A85028 100%);z-index:5}
-#scene-desert .dune-3{bottom:14%;height:30%;background:linear-gradient(180deg,#B06830 0%,#6B2810 100%);z-index:6}
-
-#scene-desert .ground{
-  position:absolute;bottom:0;left:0;right:0;height:22%;z-index:7;
-  background:linear-gradient(180deg,#8B4A20 0%,#3A1408 100%);
-}
-
-#scene-desert .pyramid{
-  position:absolute;bottom:28%;width:0;height:0;
-  border-left:solid transparent;border-right:solid transparent;
-  border-bottom:solid #B85820;z-index:5;
-}
-#scene-desert .pyramid-1{left:8%;border-left-width:40px;border-right-width:40px;border-bottom-width:80px;filter:brightness(0.85)}
-#scene-desert .pyramid-2{left:18%;border-left-width:55px;border-right-width:55px;border-bottom-width:110px}
-#scene-desert .pyramid-3{left:32%;border-left-width:35px;border-right-width:35px;border-bottom-width:70px;filter:brightness(0.9)}
-
-#scene-savannah .ground{
-  position:absolute;bottom:0;left:0;right:0;height:32%;z-index:6;
-  background:linear-gradient(180deg,#E8A850 0%,#B86838 40%,#5A2810 100%);
-}
-#scene-savannah .grass{
-  position:absolute;bottom:0;left:0;right:0;height:32%;z-index:7;
-  background:repeating-linear-gradient(90deg,transparent 0px,transparent 6px,rgba(60,30,10,0.4) 6px,rgba(60,30,10,0.4) 7px),linear-gradient(180deg, transparent 0%, rgba(60,30,10,0.7) 100%);
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--primary),transparent);
   opacity:0.6;
 }
-#scene-savannah .acacia{
-  position:absolute;bottom:28%;z-index:8;
-  width:clamp(80px,15vw,180px);height:clamp(80px,15vw,180px);
+.stat-label{
+  font-size:10px;
+  font-weight:800;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  margin-bottom:8px;
 }
-#scene-savannah .acacia::before{
-  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-  width:8px;height:45%;background:linear-gradient(180deg,#3A2510 0%,#1A0A04 100%);
+.stat-value{
+  font-size:28px;
+  font-weight:800;
+  color:var(--text);
+  letter-spacing:-0.04em;
+  line-height:1;
+  margin-bottom:6px;
+  font-variant-numeric:tabular-nums;
 }
-#scene-savannah .acacia::after{
-  content:'';position:absolute;top:30%;left:50%;transform:translateX(-50%);
-  width:100%;height:60%;background:radial-gradient(ellipse at center,#2A4A18 0%,#1A3008 60%,transparent 80%);
-  border-radius:50% 50% 30% 30%;filter:blur(1px);
+.stat-hint{
+  font-size:11px;
+  color:var(--text-3);
+  font-weight:500;
+}
+.stat-hint.up{color:var(--success)}
+.stat-hint.down{color:var(--danger)}
+
+/* Table */
+.table-wrap{
+  overflow-x:auto;
+  border-radius:0 0 12px 12px;
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--surface-3)}
+th{
+  text-align:left;
+  padding:12px 16px;
+  font-size:10px;
+  font-weight:800;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  white-space:nowrap;
+  border-bottom:1px solid var(--divider);
+}
+td{
+  padding:14px 16px;
+  border-bottom:1px solid var(--divider);
+  color:var(--text-2);
+  vertical-align:middle;
+}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--glass)}
+td.mono{font-family:var(--font-mono);font-size:11.5px;color:var(--text)}
+td.strong{font-weight:700;color:var(--text)}
+td.url-cell{max-width:300px}
+td.url-cell a{color:var(--text-2);text-decoration:none;font-family:var(--font-mono);font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.url-cell a:hover{color:var(--primary);text-decoration:underline}
+td.actions{white-space:nowrap;text-align:right}
+td.actions .btn{margin-left:4px}
+
+/* Chips */
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:2px 8px;
+  border-radius:4px;
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
+.chip.primary{background:var(--primary-soft);color:var(--primary)}
+.chip.success{background:var(--success-soft);color:var(--success)}
+.chip.danger{background:var(--danger-soft);color:var(--danger)}
+.chip.warning{background:var(--warning-soft);color:var(--warning)}
+.chip.neutral{background:var(--glass);color:var(--text-3)}
+.chip svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.4}
+
+/* Inputs */
+.input{
+  width:100%;
+  padding:10px 14px;
+  background:var(--bg);
+  border:1px solid var(--glass-border);
+  border-radius:8px;
+  color:var(--text);
+  font-size:13px;
+  font-family:inherit;
+  outline:none;
+  transition:border-color 0.15s;
+}
+.input:focus{border-color:var(--primary)}
+.input.mono{font-family:var(--font-mono);font-size:12px}
+.input::placeholder{color:var(--text-3)}
+
+.search-bar{
+  display:flex;
+  gap:8px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--divider);
+  flex-wrap:wrap;
+  background:var(--surface);
+}
+.search-bar .input{flex:1;min-width:200px}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(10,12,16,0.85);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal-overlay.active{display:flex}
+.modal{
+  background:var(--surface-2);
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  max-width:560px;
+  width:100%;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 24px;
+  border-bottom:1px solid var(--divider);
+}
+.modal-title{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-0.02em}
+.modal-close{
+  width:32px;height:32px;
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-3);
+}
+.modal-close:hover{background:var(--glass);color:var(--text)}
+.modal-close svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.4}
+.modal-body{padding:20px 24px}
+.modal-footer{
+  display:flex;
+  gap:8px;
+  padding:16px 24px;
+  border-top:1px solid var(--divider);
+  justify-content:flex-end;
+  flex-wrap:wrap;
 }
 
-#scene-city .far-skyline{
-  position:absolute;bottom:38%;left:-10%;width:120%;height:38%;
-  z-index:4;opacity:0.4;filter:blur(3px);
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.field-label{
+  display:block;
+  font-size:11px;
+  font-weight:800;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  margin-bottom:6px;
 }
-#scene-city .far-skyline svg{width:100%;height:100%}
-#scene-city .far-skyline path{fill:#0a0e1a}
-
-#scene-city .mid-skyline{
-  position:absolute;bottom:32%;left:-5%;width:110%;height:38%;
-  z-index:5;opacity:0.75;
+.field-hint{
+  font-size:11px;
+  color:var(--text-3);
+  margin-top:6px;
+  line-height:1.5;
 }
-#scene-city .mid-skyline svg{width:100%;height:100%}
-#scene-city .mid-skyline path{fill:#0f1420}
-#scene-city .mid-skyline .win{
-  fill:rgba(245,158,11,0.7);
-  animation:win-flicker 5s ease-in-out infinite;
-}
-
-#scene-city .ground{
-  position:absolute;bottom:0;left:0;right:0;height:32%;z-index:6;
-  background:linear-gradient(180deg, rgba(20,25,35,0.95) 0%, rgba(10,12,18,1) 40%, #050608 100%);
-}
-
-/* ═══════════════════════════════════════════════════════
-   PEOPLE (background figures)
-   ═══════════════════════════════════════════════════════ */
-.people-layer{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:10;
+.field-error{
+  font-size:11px;
+  color:var(--danger);
+  margin-top:6px;
+  font-weight:600;
 }
 
-.person{
-  position:absolute;
-  bottom:8%;
-  width:clamp(10px,1.2vw,16px);
-  height:clamp(24px,3.5vw,40px);
-  animation:person-walk linear infinite;
-  will-change:transform;
+/* Toast */
+.toast-container{
+  position:fixed;
+  bottom:24px;right:24px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  z-index:200;
+  max-width:380px;
 }
-.person svg{width:100%;height:100%}
+.toast{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+  border-radius:10px;
+  background:var(--surface-2);
+  border:1px solid var(--glass-border);
+  font-size:13px;
+  font-weight:600;
+  color:var(--text);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+  animation:slideIn 0.3s var(--ease);
+}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.success{border-color:rgba(16,185,129,0.4)}
+.toast.success svg{color:var(--success)}
+.toast.error{border-color:rgba(239,68,68,0.4)}
+.toast.error svg{color:var(--danger)}
+.toast.warning{border-color:rgba(217,119,6,0.4)}
+.toast.warning svg{color:var(--warning)}
+.toast svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.4;flex-shrink:0}
 
-.person .legs{animation:leg-swing 0.6s steps(2) infinite alternate;transform-origin:top center}
-@keyframes person-walk{
-  from{transform:translateX(-15vw)}
-  to{transform:translateX(115vw)}
+/* Empty */
+.empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:60px 24px;
+  gap:12px;
 }
-@keyframes leg-swing{
-  from{transform:scaleX(1)}
-  to{transform:scaleX(0.85)}
+.empty-icon{
+  width:56px;height:56px;
+  border-radius:14px;
+  background:var(--glass);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-3);
+  margin-bottom:4px;
 }
+.empty-icon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2}
+.empty-title{font-size:15px;font-weight:800;color:var(--text)}
+.empty-desc{font-size:13px;color:var(--text-3);max-width:360px;line-height:1.5}
 
-.dog{
-  position:absolute;
-  bottom:12%;
-  z-index:11;
-  width:clamp(16px,2.2vw,28px);
-  height:clamp(10px,1.4vw,18px);
-  animation:dog-run linear infinite;
+/* Loading spinner */
+.spinner{
+  width:20px;height:20px;
+  border:2px solid var(--glass);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
 }
-@keyframes dog-run{
-  from{transform:translateX(-15vw)}
-  to{transform:translateX(115vw)}
-}
-.dog svg{width:100%;height:100%}
-.dog .tail{animation:tail-wag 0.4s ease-in-out infinite alternate;transform-origin:bottom left}
-@keyframes tail-wag{
-  from{transform:rotate(-15deg)}
-  to{transform:rotate(20deg)}
-}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:40px;color:var(--text-3);font-size:13px;font-weight:600}
 
-/* ═══════════════════════════════════════════════════════
-   ★ THE PHONE — the hero, centered, LARGE
-   ═══════════════════════════════════════════════════════ */
-#phone-stage{
-  position:absolute;
-  inset:0;
+/* Auth */
+#auth-screen{
+  position:fixed;inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  z-index:20;
-  pointer-events:none;
+  padding:20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(245,158,11,0.15) 0%, transparent 60%),
+    var(--bg);
+  z-index:150;
+}
+.auth-card{
+  background:var(--surface-2);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+  padding:32px;
+  max-width:420px;
+  width:100%;
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.auth-logo{
+  width:64px;height:64px;
+  border-radius:16px;
+  background:var(--primary-soft);
+  border:2px solid var(--primary-glow);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+  box-shadow:0 0 40px var(--primary-glow);
+}
+.auth-logo img{width:60%;height:60%;object-fit:contain;border-radius:12px}
+.auth-title{
+  font-size:20px;
+  font-weight:800;
+  color:var(--text);
+  text-align:center;
+  letter-spacing:-0.02em;
+  margin-bottom:6px;
+}
+.auth-sub{
+  font-size:13px;
+  color:var(--text-3);
+  text-align:center;
+  margin-bottom:24px;
+  line-height:1.5;
 }
 
-#phone{
+/* Copy success flash */
+.copied{color:var(--success)!important}
+
+/* Status line */
+.status-line{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 14px;
+  border-radius:8px;
+  background:var(--surface-3);
+  border:1px solid var(--glass-border);
+  font-size:12px;
+  font-weight:600;
+  color:var(--text-2);
+  margin-bottom:16px;
+}
+.status-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--text-3);
+  flex-shrink:0;
+}
+.status-dot.online{background:var(--success);box-shadow:0 0 8px var(--success)}
+.status-dot.offline{background:var(--danger);box-shadow:0 0 8px var(--danger)}
+
+/* Toggle */
+.toggle-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid var(--divider);
+}
+.toggle-row:last-child{border-bottom:none}
+.toggle-info{flex:1;min-width:0}
+.toggle-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.toggle-desc{font-size:11px;color:var(--text-3);line-height:1.4}
+.switch{
+  width:44px;height:26px;
+  border-radius:13px;
+  background:var(--glass);
   position:relative;
-  width:clamp(240px, 38vw, 340px);
-  aspect-ratio: 9 / 19.5;
-  border-radius: clamp(28px, 4vw, 44px);
-  background: #1a1f2a;
-  border: clamp(3px, 0.4vw, 5px) solid #2a3040;
-  box-shadow:
-    0 0 0 1px rgba(0,0,0,0.8),
-    0 30px 80px rgba(0,0,0,0.6),
-    0 0 120px rgba(245,158,11,0.25),
-    inset 0 0 20px rgba(0,0,0,0.4);
-  overflow: hidden;
-  pointer-events: auto;
-  will-change: transform;
-  animation: phone-float 6s ease-in-out infinite;
+  transition:background 0.2s;
+  flex-shrink:0;
+  border:none;
+  cursor:pointer;
 }
-@keyframes phone-float{
-  0%,100%{transform: translateY(0) rotate(-1deg)}
-  50%{transform: translateY(-8px) rotate(1deg)}
-}
-
-/* Notch */
-#phone::before{
+.switch::after{
   content:'';
   position:absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32%;
-  height: 20px;
-  background: #0a0c10;
-  border-radius: 0 0 14px 14px;
-  z-index: 10;
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.05);
+  top:3px;left:3px;
+  width:20px;height:20px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform 0.2s;
 }
+.switch.on{background:var(--primary)}
+.switch.on::after{transform:translateX(18px)}
 
-/* Home indicator */
-#phone::after{
+/* Code block */
+.code{
+  background:var(--bg);
+  border:1px solid var(--glass-border);
+  border-radius:8px;
+  padding:14px 16px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--text-2);
+  overflow-x:auto;
+  line-height:1.6;
+  white-space:pre;
+  position:relative;
+}
+.code .copy-btn{
+  position:absolute;
+  top:8px;right:8px;
+  padding:4px 10px;
+  font-size:10px;
+  font-weight:800;
+  border-radius:5px;
+  background:var(--surface-3);
+  border:1px solid var(--glass-border);
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+}
+.code .copy-btn:hover{background:var(--glass);color:var(--text)}
+
+/* Pagination */
+.pagination{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 20px;
+  border-top:1px solid var(--divider);
+  font-size:12px;
+  color:var(--text-3);
+  flex-wrap:wrap;
+  gap:8px;
+}
+.pagination-controls{display:flex;gap:6px}
+.pagination-controls .btn{min-height:28px;padding:4px 12px;font-size:11px}
+
+/* Bulk action bar */
+.bulk-bar{
+  position:fixed;
+  bottom:24px;left:50%;
+  transform:translateX(-50%);
+  background:var(--surface-2);
+  border:1px solid var(--primary-glow);
+  border-radius:10px;
+  padding:10px 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+  z-index:50;
+  font-size:13px;
+  font-weight:600;
+}
+.bulk-bar .count{color:var(--primary);font-weight:800}
+
+/* Checkbox */
+input[type="checkbox"]{
+  appearance:none;
+  -webkit-appearance:none;
+  width:16px;height:16px;
+  border-radius:4px;
+  border:1.5px solid var(--glass-border);
+  background:var(--bg);
+  cursor:pointer;
+  position:relative;
+  flex-shrink:0;
+}
+input[type="checkbox"]:checked{
+  background:var(--primary);
+  border-color:var(--primary);
+}
+input[type="checkbox"]:checked::after{
   content:'';
   position:absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28%;
-  height: 3px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 2px;
-  z-index: 10;
-}
-
-/* Screen */
-#phone-screen{
-  position: absolute;
-  inset: 0;
-  background: #0a0c10;
-  border-radius: inherit;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding-top: 28px;
-}
-
-/* Editor header */
-.editor-header{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  background: #151922;
-  flex-shrink: 0;
-}
-.editor-dots{
-  display: flex;
-  gap: 3px;
-}
-.editor-dot{
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-.editor-dot:nth-child(1){background:#EF4444}
-.editor-dot:nth-child(2){background:#F59E0B}
-.editor-dot:nth-child(3){background:#10B981}
-.editor-filename{
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: rgba(232,236,241,0.5);
-  font-weight: 600;
-  margin-left: 4px;
-}
-.editor-status{
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 8px;
-  color: var(--primary);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Code area */
-.editor-code{
-  flex: 1;
-  padding: 10px 8px;
-  font-family: var(--font-mono);
-  font-size: clamp(9px, 1.3vw, 11px);
-  line-height: 1.7;
-  color: rgba(232,236,241,0.85);
-  overflow: hidden;
-  position: relative;
-  background: #0a0c10;
-}
-.editor-line{
-  display: flex;
-  gap: 6px;
-  white-space: pre;
-  min-height: 1.7em;
-}
-.editor-ln{
-  color: rgba(232,236,241,0.25);
-  font-size: 0.9em;
-  flex-shrink: 0;
-  min-width: 16px;
-  text-align: right;
-  user-select: none;
-}
-.editor-txt{
-  flex: 1;
-  overflow: hidden;
-  text-overflow: clip;
-}
-.kw{color:#c084fc}
-.fn{color:#60a5fa}
-.str{color:#86efac}
-.num{color:#fcd34d}
-.op{color:rgba(232,236,241,0.5)}
-.comment{color:rgba(232,236,241,0.3);font-style:italic}
-.cur{
-  display: inline-block;
-  width: 1.5px;
-  height: 1em;
-  background: var(--primary);
-  vertical-align: text-bottom;
-  animation: cur-blink 0.9s steps(2) infinite;
-  margin-left: 1px;
-}
-@keyframes cur-blink{50%{opacity:0}}
-
-/* Terminal output */
-.editor-terminal{
-  border-top: 1px solid rgba(255,255,255,0.06);
-  background: #050608;
-  padding: 8px 10px;
-  font-family: var(--font-mono);
-  font-size: clamp(8px, 1.1vw, 9.5px);
-  line-height: 1.6;
-  color: rgba(232,236,241,0.7);
-  min-height: 60px;
-  flex-shrink: 0;
-}
-.terminal-header{
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 4px;
-  font-size: 0.85em;
-  color: rgba(232,236,241,0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 700;
-}
-.terminal-line{
-  color: rgba(232,236,241,0.7);
-  margin-bottom: 1px;
-  white-space: pre-wrap;
-}
-.terminal-success{color:#10B981}
-.terminal-prompt{color:var(--primary)}
-
-/* Footer */
-.editor-footer{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  background: #151922;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.deploy-btn{
-  flex: 1;
-  padding: 8px;
-  background: var(--primary);
-  color: #0a0c10;
-  font-size: clamp(9px, 1.2vw, 11px);
-  font-weight: 800;
-  border-radius: 6px;
-  text-align: center;
-  letter-spacing: 0.02em;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-.deploy-btn.pressed{
-  transform: scale(0.95);
-  box-shadow: 0 0 30px var(--primary-glow);
-}
-.deploy-btn::after{
-  content:'';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transform: translateX(-100%);
-}
-.deploy-btn.pressed::after{
-  animation: btn-shine 0.6s ease-out;
-}
-@keyframes btn-shine{
-  to { transform: translateX(100%); }
-}
-
-.live-badge{
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: rgba(16,185,129,0.15);
-  color: #10B981;
-  border-radius: 6px;
-  font-size: clamp(7px, 1vw, 9px);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  opacity: 0;
-  transform: scale(0.7);
-  transition: opacity 0.3s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-}
-.live-badge.visible{
-  opacity: 1;
-  transform: scale(1);
-}
-.live-dot{
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 6px currentColor;
-  animation: live-pulse 1.5s ease-in-out infinite;
-}
-@keyframes live-pulse{
-  0%,100%{opacity:1}
-  50%{opacity:0.4}
-}
-
-/* ═══════════════════════════════════════════════════════
-   INFO CARD
-   ═══════════════════════════════════════════════════════ */
-#info-card{
-  position: fixed;
-  bottom: calc(var(--safe-bottom) + 20px);
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  max-width: calc(100vw - 32px);
-  width: 500px;
-  z-index: 50;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-#info-card.visible{
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  pointer-events: auto;
-}
-.info-inner{
-  position: relative;
-  background: rgba(15,18,24,0.92);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border: 1px solid rgba(245,158,11,0.2);
-  border-radius: 16px;
-  padding: 16px 18px;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.6),
-    0 0 40px rgba(245,158,11,0.1);
-  overflow: hidden;
-}
-.info-inner::before{
-  content:'';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-}
-.info-eyebrow{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 9.5px;
-  font-weight: 800;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 8px;
-  font-family: var(--font-mono);
-}
-.info-eyebrow::before{
-  content:'';
-  width: 14px;
-  height: 1.5px;
-  background: var(--primary);
-}
-.info-title{
-  font-size: clamp(15px, 2vw, 20px);
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 6px;
-  min-height: 1.2em;
-}
-.info-title .cursor{
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  background: var(--primary);
-  margin-left: 2px;
-  vertical-align: text-bottom;
-  animation: cur-blink 0.8s steps(2) infinite;
-}
-.info-desc{
-  font-size: clamp(11px, 1.3vw, 12.5px);
-  color: rgba(232,236,241,0.72);
-  line-height: 1.5;
-  margin-bottom: 12px;
-  max-width: 440px;
-}
-.info-footer{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.info-cta{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--primary);
-  color: #0a0c10;
-  font-size: 12px;
-  font-weight: 800;
-  border-radius: 9px;
-  transition: all 0.2s ease;
-  box-shadow: 0 6px 20px rgba(245,158,11,0.35);
-}
-.info-cta:hover{
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-.info-cta svg{
-  width: 12px;
-  height: 12px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.info-progress{
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.info-progress .dot{
-  width: 22px;
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(255,255,255,0.15);
-  transition: background 0.3s;
-}
-.info-progress .dot.active{background: var(--primary)}
-.info-progress .dot.done{background: rgba(245,158,11,0.4)}
-
-@media (max-width: 640px){
-  #info-card{width: calc(100vw - 24px)}
-  .info-inner{padding: 14px}
-  .info-desc{font-size: 11px}
-  .info-cta{padding: 7px 12px; font-size: 11px}
-}
-
-/* ═══════════════════════════════════════════════════════
-   FINAL CTA
-   ═══════════════════════════════════════════════════════ */
-#final-cta{
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: rgba(10,12,16,0.94);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  padding: 24px;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 1s ease;
-}
-#final-cta.visible{
-  opacity: 1;
-  pointer-events: auto;
-}
-.final-logo{
-  width: 88px;
-  height: 88px;
-  border-radius: 22px;
-  background: rgba(245,158,11,0.15);
-  border: 2px solid rgba(245,158,11,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-  box-shadow: 0 0 80px rgba(245,158,11,0.4);
-  animation: final-pulse 3s ease-in-out infinite;
-}
-@keyframes final-pulse{
-  0%,100%{box-shadow: 0 0 80px rgba(245,158,11,0.4)}
-  50%{box-shadow: 0 0 120px rgba(245,158,11,0.6)}
-}
-.final-logo img{
-  width: 60%;
-  height: 60%;
-  object-fit: contain;
-  border-radius: 16px;
-}
-.final-title{
-  font-size: clamp(26px, 5vw, 44px);
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-bottom: 8px;
-  max-width: 16ch;
-}
-.final-sub{
-  font-size: clamp(14px, 2vw, 17px);
-  font-weight: 500;
-  color: rgba(255,255,255,0.72);
-  margin-bottom: 28px;
-  max-width: 32ch;
-  line-height: 1.5;
-}
-.final-url{
-  font-family: var(--font-mono);
-  font-size: clamp(12px, 1.8vw, 15px);
-  font-weight: 600;
-  color: var(--primary);
-  letter-spacing: 0.04em;
-  margin-bottom: 14px;
-}
-.final-cta-btn{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 36px;
-  background: var(--primary);
-  color: #0a0c10;
-  font-size: clamp(14px, 1.9vw, 16px);
-  font-weight: 800;
-  border-radius: 14px;
-  transition: all 0.2s ease;
-  box-shadow: 0 10px 40px rgba(245,158,11,0.4);
-  text-decoration: none;
-}
-.final-cta-btn:hover{
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-}
-.final-cta-btn svg{
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.final-tagline{
-  margin-top: 18px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.5);
-}
-
-/* ═══════════════════════════════════════════════════════
-   SKIP
-   ═══════════════════════════════════════════════════════ */
-#skip{
-  position: fixed;
-  top: calc(var(--safe-top) + 16px);
-  right: 16px;
-  z-index: 60;
-  padding: 8px 16px;
-  background: rgba(10,12,16,0.7);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  color: rgba(255,255,255,0.75);
-  font-size: 12px;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
-}
-#skip:hover{
-  background: rgba(10,12,16,0.9);
-  color: #fff;
-  border-color: rgba(245,158,11,0.5);
-}
-#skip.hidden{opacity: 0; pointer-events: none}
-
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  #phone{animation: none}
+  left:4px;top:1px;
+  width:5px;height:9px;
+  border:solid #0a0c10;
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg);
 }
 </style>
 </head>
 <body>
 
-<div id="stage">
-
-  <!-- ═══════════════════════════════════════════════════
-       SCENE 1 — TOWN
-       ═══════════════════════════════════════════════════ -->
-  <div class="scene active" id="scene-town">
-    <div class="sky"></div>
-    <div class="celestial"></div>
-    <div class="clouds" id="town-clouds"></div>
-
-    <div class="far-skyline">
-      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
-        <path d="M0,400 L0,180 L40,180 L40,140 L80,140 L80,200 L120,200 L120,120 L160,120 L160,240 L200,240 L200,160 L240,160 L240,100 L280,100 L280,180 L320,180 L320,140 L360,140 L360,220 L400,220 L400,160 L440,160 L440,80 L480,80 L480,160 L520,160 L520,120 L560,120 L560,180 L600,180 L600,100 L640,100 L640,160 L680,160 L680,140 L720,140 L720,200 L760,200 L760,120 L800,120 L800,180 L840,180 L840,100 L880,100 L880,160 L920,160 L920,140 L960,140 L960,200 L1000,200 L1000,120 L1040,120 L1040,180 L1080,180 L1080,160 L1120,160 L1120,140 L1160,140 L1160,200 L1200,200 L1200,400 Z"/>
-      </svg>
+<!-- ═══════════════════════════════════════════════════════
+     AUTH SCREEN
+     ═══════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="https://foliostudios.vercel.app/icons/icon.jpg" alt="Folio">
     </div>
-    <div class="mid-skyline">
-      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
-        <path d="M0,400 L0,240 L50,240 L50,180 L100,180 L100,220 L150,220 L150,140 L200,140 L200,200 L250,200 L250,120 L300,120 L300,180 L350,180 L350,150 L400,150 L400,220 L450,220 L450,130 L500,130 L500,200 L550,200 L550,170 L600,170 L600,220 L650,220 L650,150 L700,150 L700,210 L750,210 L750,180 L800,180 L800,220 L850,220 L850,140 L900,140 L900,200 L950,200 L950,160 L1000,160 L1000,220 L1050,220 L1050,180 L1100,180 L1100,200 L1150,200 L1150,170 L1200,170 L1200,400 Z"/>
-        <g id="town-windows"></g>
-      </svg>
-    </div>
-
-    <div class="ground"></div>
-
-    <div class="people-layer" id="town-people"></div>
-    <div id="town-dogs"></div>
+    <div class="auth-title">Shortlink Admin</div>
+    <div class="auth-sub">Enter your admin API key to access the shortlink management console.</div>
+    <form id="auth-form">
+      <div class="field">
+        <label class="field-label">Admin API Key</label>
+        <input type="password" class="input mono" id="auth-key" placeholder="Enter admin key" autocomplete="off" spellcheck="false">
+        <div class="field-hint">This is the same key used by <code class="mono">host.js</code> (ADMIN_API_KEY)</div>
+      </div>
+      <div class="field">
+        <label class="field-label">API Base URL</label>
+        <input type="url" class="input mono" id="auth-base" value="https://foliosites.vercel.app" placeholder="https://foliosites.vercel.app">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px">
+        <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Sign in
+      </button>
+    </form>
+    <div id="auth-error" class="field-error hidden"></div>
   </div>
+</div>
 
-  <!-- ═══════════════════════════════════════════════════
-       SCENE 2 — FOREST
-       ═══════════════════════════════════════════════════ -->
-  <div class="scene" id="scene-forest">
-    <div class="sky"></div>
-    <div class="celestial"></div>
-    <div class="clouds" id="forest-clouds"></div>
+<!-- ═══════════════════════════════════════════════════════
+     APP
+     ═══════════════════════════════════════════════════════ -->
+<div class="app hidden" id="app">
 
-    <div class="ground"></div>
-    <div class="path"></div>
-
-    <div class="tree" style="left:8%;">
-      <svg viewBox="0 0 40 100"><polygon points="20,0 35,30 5,30" fill="#1a3010"/><polygon points="20,15 40,50 0,50" fill="#1a3010"/><polygon points="20,35 42,75 0,75" fill="#1a3010"/><polygon points="20,55 44,95 0,95" fill="#1a3010"/><rect x="18" y="90" width="4" height="10" fill="#3a2010"/></svg>
-    </div>
-    <div class="tree" style="left:85%;transform:scale(0.9);">
-      <svg viewBox="0 0 40 100"><polygon points="20,0 35,30 5,30" fill="#1a3010"/><polygon points="20,15 40,50 0,50" fill="#1a3010"/><polygon points="20,35 42,75 0,75" fill="#1a3010"/><polygon points="20,55 44,95 0,95" fill="#1a3010"/><rect x="18" y="90" width="4" height="10" fill="#3a2010"/></svg>
-    </div>
-
-    <div class="people-layer" id="forest-people"></div>
-    <div id="forest-fireflies"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       SCENE 3 — DESERT
-       ═══════════════════════════════════════════════════ -->
-  <div class="scene" id="scene-desert">
-    <div class="sky"></div>
-    <div class="celestial"></div>
-    <div class="clouds" id="desert-clouds"></div>
-
-    <div class="dune dune-1"></div>
-    <div class="dune dune-2"></div>
-    <div class="dune dune-3"></div>
-
-    <div class="pyramid pyramid-1"></div>
-    <div class="pyramid pyramid-2"></div>
-    <div class="pyramid pyramid-3"></div>
-
-    <div class="ground"></div>
-
-    <div class="people-layer" id="desert-people"></div>
-    <div id="desert-camels"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       SCENE 4 — SAVANNAH
-       ═══════════════════════════════════════════════════ -->
-  <div class="scene" id="scene-savannah">
-    <div class="sky"></div>
-    <div class="celestial"></div>
-    <div class="clouds" id="savannah-clouds"></div>
-
-    <div class="ground"></div>
-    <div class="grass"></div>
-
-    <div class="acacia" style="left:15%;"></div>
-    <div class="acacia" style="left:65%;transform:scale(0.8);"></div>
-    <div class="acacia" style="left:88%;transform:scale(0.6);"></div>
-
-    <div class="people-layer" id="savannah-people"></div>
-    <div id="savannah-animals"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       SCENE 5 — CITY
-       ═══════════════════════════════════════════════════ -->
-  <div class="scene" id="scene-city">
-    <div class="sky"></div>
-    <div class="stars" id="city-stars"></div>
-    <div class="celestial"></div>
-    <div class="clouds" id="city-clouds"></div>
-
-    <div class="far-skyline">
-      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
-        <path d="M0,400 L0,180 L40,180 L40,140 L80,140 L80,200 L120,200 L120,120 L160,120 L160,240 L200,240 L200,160 L240,160 L240,100 L280,100 L280,180 L320,180 L320,140 L360,140 L360,220 L400,220 L400,160 L440,160 L440,80 L480,80 L480,160 L520,160 L520,120 L560,120 L560,180 L600,180 L600,100 L640,100 L640,160 L680,160 L680,140 L720,140 L720,200 L760,200 L760,120 L800,120 L800,180 L840,180 L840,100 L880,100 L880,160 L920,160 L920,140 L960,140 L960,200 L1000,200 L1000,120 L1040,120 L1040,180 L1080,180 L1080,160 L1120,160 L1120,140 L1160,140 L1160,200 L1200,200 L1200,400 Z"/>
-      </svg>
-    </div>
-    <div class="mid-skyline">
-      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
-        <path d="M0,400 L0,240 L50,240 L50,180 L100,180 L100,220 L150,220 L150,140 L200,140 L200,200 L250,200 L250,120 L300,120 L300,180 L350,180 L350,150 L400,150 L400,220 L450,220 L450,130 L500,130 L500,200 L550,200 L550,170 L600,170 L600,220 L650,220 L650,150 L700,150 L700,210 L750,210 L750,180 L800,180 L800,220 L850,220 L850,140 L900,140 L900,200 L950,200 L950,160 L1000,160 L1000,220 L1050,220 L1050,180 L1100,180 L1100,200 L1150,200 L1150,170 L1200,170 L1200,400 Z"/>
-        <g id="city-windows"></g>
-      </svg>
-    </div>
-
-    <div class="ground"></div>
-
-    <div class="people-layer" id="city-people"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       THE PHONE — centered over every scene, LARGE
-       ═══════════════════════════════════════════════════ -->
-  <div id="phone-stage">
-    <div id="phone">
-      <div id="phone-screen">
-
-        <!-- Editor header -->
-        <div class="editor-header">
-          <div class="editor-dots">
-            <div class="editor-dot"></div>
-            <div class="editor-dot"></div>
-            <div class="editor-dot"></div>
-          </div>
-          <div class="editor-filename" id="editor-filename">index.js</div>
-          <div class="editor-status" id="editor-status">Editing</div>
-        </div>
-
-        <!-- Code area (filled by JS) -->
-        <div class="editor-code" id="editor-code"></div>
-
-        <!-- Terminal output (filled by JS) -->
-        <div class="editor-terminal" id="editor-terminal">
-          <div class="terminal-header">
-            <span>●</span> terminal
-          </div>
-          <div class="terminal-line" id="terminal-output">Ready.</div>
-        </div>
-
-        <!-- Footer -->
-        <div class="editor-footer">
-          <div class="deploy-btn" id="deploy-btn">Deploy</div>
-          <div class="live-badge" id="live-badge">
-            <span class="live-dot"></span>
-            <span>LIVE</span>
-          </div>
-        </div>
-
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="https://foliostudios.vercel.app/icons/icon.jpg" alt="Folio">
+      <div class="brand-text">
+        <div class="brand-name">Shortlinks</div>
+        <div class="brand-sub">Folio Admin</div>
       </div>
     </div>
-  </div>
 
-</div>
+    <button class="nav-item active" data-view="overview">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </button>
+    <button class="nav-item" data-view="links">
+      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Links
+      <span class="badge" id="badge-links">0</span>
+    </button>
+    <button class="nav-item" data-view="domains">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Domains
+    </button>
+    <button class="nav-item" data-view="create">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create Link
+    </button>
 
-<!-- ═══════════════════════════════════════════════════════
-     INFO CARD
-     ═══════════════════════════════════════════════════════ -->
-<div id="info-card">
-  <div class="info-inner">
-    <div class="info-eyebrow" id="info-eyebrow">Scene 01 / Town</div>
-    <div class="info-title" id="info-title"></div>
-    <div class="info-desc" id="info-desc"></div>
-    <div class="info-footer">
-      <a class="info-cta" href="https://foliostudios.vercel.app" target="_blank" rel="noopener">
-        Open Folio
-        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
-      <div class="info-progress" id="info-progress"></div>
+    <div class="nav-section">System</div>
+    <button class="nav-item" data-view="api">
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      API Reference
+    </button>
+    <button class="nav-item" data-view="settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+
+    <div style="margin-top:auto;padding-top:16px">
+      <button class="nav-item" id="logout-btn" style="color:var(--danger)">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
     </div>
-  </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="mobile-header">
+      <button id="mobile-menu-btn">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div style="font-size:14px;font-weight:800;color:var(--text)">Shortlinks</div>
+    </div>
+
+    <div id="view-content"></div>
+  </main>
+
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     FINAL CTA
-     ═══════════════════════════════════════════════════════ -->
-<div id="final-cta">
-  <div class="final-logo">
-    <img src="https://foliostudios.vercel.app/icons/icon.jpg" alt="Folio">
-  </div>
-  <div class="final-title">Your whole dev setup, in your pocket.</div>
-  <div class="final-sub">Code anywhere. Ship from your phone. Build real websites without a laptop.</div>
-  <div class="final-url">folio.xo.je</div>
-  <a href="https://foliostudios.vercel.app" class="final-cta-btn" target="_blank" rel="noopener">
-    Open Folio
-    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-  </a>
-  <div class="final-tagline">No setup. No laptop. Just code.</div>
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
 </div>
 
-<!-- SKIP -->
-<button id="skip" aria-label="Skip to the end">Skip →</button>
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
 
 <script>
 (function(){
   'use strict';
 
-  const FOLIO_URL = 'https://foliostudios.vercel.app';
-  const SCENE_DURATION = 9000;
-  const TYPING_SPEED = 28;
-  const CODE_TYPING_SPEED = 32;
-
-  // Scene metadata
-  const SCENES = [
-    {
-      id: 'scene-town',
-      eyebrow: 'Scene 01 / Town',
-      title: 'Code from anywhere.',
-      desc: 'Open a project in a café, on a bench, or in the back seat of a taxi. Folio works wherever you are.',
-    },
-    {
-      id: 'scene-forest',
-      eyebrow: 'Scene 02 / Forest',
-      title: 'Works offline.',
-      desc: 'Deep in the woods with no signal? Keep coding. Folio stores everything locally and syncs when you reconnect.',
-    },
-    {
-      id: 'scene-desert',
-      eyebrow: 'Scene 03 / Desert',
-      title: 'Deploy in seconds.',
-      desc: 'A desert research station, a remote village, a safari camp — the live site goes up the moment you hit Deploy.',
-    },
-    {
-      id: 'scene-savannah',
-      eyebrow: 'Scene 04 / Savannah',
-      title: 'Real projects. Real users.',
-      desc: 'Folio powers portfolios, storefronts, and full web apps on phones across three continents.',
-    },
-    {
-      id: 'scene-city',
-      eyebrow: 'Scene 05 / City',
-      title: 'Ship from your phone.',
-      desc: 'The build pipeline, the deploy pipeline, the API runtime — all running from a device that fits in your pocket.',
-    },
-  ];
-
-  // Real code that types itself — a working greet function
-  const CODE_TEMPLATE = [
-    { tokens: [{t:'const',c:'kw'},{t:' ',c:''},{t:'greet',c:'fn'},{t:' ',c:''},{t:'=',c:'op'},{t:' ',c:''},{t:'(',c:'op'},{t:')',c:'op'},{t:' ',c:''},{t:'=>',c:'op'},{t:' ',c:''},{t:'{',c:'op'}] },
-    { tokens: [{t:'  ',c:''},{t:'return',c:'kw'},{t:' ',c:''},{t:'`Hello, ',c:'str'},{t:'${name}',c:'op'},{t:'!`',c:'str'},{t:';',c:'op'}] },
-    { tokens: [{t:'}',c:'op'},{t:';',c:'op'}] },
-    { tokens: [{t:'',c:''}] },
-    { tokens: [{t:'greet',c:'fn'},{t:'(',c:'op'},{t:'"world"',c:'str'},{t:')',c:'op'},{t:';',c:'op'}] },
-  ];
-
+  // ═══════════════════════════════════════════════════════
+  //  STATE
+  // ═══════════════════════════════════════════════════════
   const state = {
-    currentScene: 0,
-    typingTimer: null,
-    codeTimer: null,
-    advanceTimer: null,
+    apiKey: '',
+    apiBase: 'https://foliosites.vercel.app',
+    backendBase: 'https://foliostudios.vercel.app',
+    currentView: 'overview',
+    links: [],
+    domains: [],
+    primaryDomain: 'folio.xo.je',
+    loading: false,
+    selectedLinks: new Set(),
+    searchQuery: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+    page: 0,
+    pageSize: 20,
   };
 
   const $ = id => document.getElementById(id);
 
   // ═══════════════════════════════════════════════════════
-  //  SEEDING
+  //  API CLIENT
   // ═══════════════════════════════════════════════════════
-  function seedStars() {
-    const el = $('city-stars');
-    if (!el) return;
-    for (let i = 0; i < 70; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      s.style.left = (Math.random() * 100) + '%';
-      s.style.top = (Math.random() * 55) + '%';
-      s.style.animationDelay = (Math.random() * 4) + 's';
-      s.style.animationDuration = (3 + Math.random() * 3) + 's';
-      if (Math.random() < 0.3) { s.style.width='1px'; s.style.height='1px'; }
-      el.appendChild(s);
+  async function api(path, opts = {}) {
+    const url = state.apiBase + path;
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': state.apiKey,
+      ...(opts.headers || {}),
+    };
+    try {
+      const res = await fetch(url, { ...opts, headers });
+      let data = null;
+      try { data = await res.json(); } catch {}
+      return { ok: res.ok, status: res.status, data };
+    } catch (err) {
+      return { ok: false, status: 0, data: { error: err.message } };
     }
   }
 
-  function seedClouds(id, count) {
-    const el = $(id);
-    if (!el) return;
-    for (let i = 0; i < count; i++) {
-      const c = document.createElement('div');
-      c.className = 'cloud';
-      c.style.top = (5 + Math.random() * 35) + '%';
-      const w = 220 + Math.random() * 280;
-      c.style.width = w + 'px';
-      c.style.height = (w * 0.28) + 'px';
-      c.style.background = 'radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 50%, transparent 80%)';
-      c.style.animationDuration = (70 + Math.random() * 50) + 's';
-      c.style.animationDelay = (-Math.random() * 90) + 's';
-      el.appendChild(c);
+  // List all links (admin)
+  async function fetchLinks() {
+    const res = await api('/api/shortlink?action=list&limit=500');
+    if (res.ok && res.data?.success) {
+      state.links = res.data.links || [];
+      state.domains = [];
+      return true;
     }
+    return false;
   }
 
-  function seedWindows(id) {
-    const el = $(id);
-    if (!el) return;
-    for (let i = 0; i < 30; i++) {
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('x', (Math.random() * 1200).toFixed(0));
-      rect.setAttribute('y', (140 + Math.random() * 240).toFixed(0));
-      rect.setAttribute('width', '3');
-      rect.setAttribute('height', '5');
-      rect.setAttribute('class', 'win');
-      rect.style.animationDelay = (Math.random() * 5) + 's';
-      rect.style.animationDuration = (4 + Math.random() * 4) + 's';
-      el.appendChild(rect);
+  // Fetch supported domains
+  async function fetchDomains() {
+    const res = await api('/api/shortlink?action=domains');
+    if (res.ok && res.data?.success) {
+      state.domains = res.data.domains || [];
+      state.primaryDomain = res.data.primary || 'folio.xo.je';
+      return true;
     }
+    return false;
   }
 
-  function personSvg() {
-    return `<svg viewBox="0 0 10 30">
-      <circle cx="5" cy="3" r="2.8" fill="#1a1418"/>
-      <rect x="3" y="6" width="4" height="11" rx="1.5" fill="#1a1418"/>
-      <rect x="3.2" y="17" width="1.6" height="11" fill="#1a1418" class="legs"/>
-      <rect x="5.2" y="17" width="1.6" height="11" fill="#1a1418"/>
-    </svg>`;
+  async function createLink(body) {
+    return api('/api/shortlink?action=create', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   }
 
-  function seedPeople(id, count) {
-    const el = $(id);
-    if (!el) return;
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement('div');
-      p.className = 'person';
-      const dur = 14 + Math.random() * 12;
-      p.style.animationDuration = dur + 's';
-      p.style.animationDelay = (-Math.random() * dur) + 's';
-      p.style.transform = `scale(${0.65 + Math.random() * 0.55})`;
-      p.style.bottom = (3 + Math.random() * 22) + '%';
-      p.innerHTML = personSvg();
-      el.appendChild(p);
-    }
+  async function claimLink(body) {
+    return api('/api/shortlink?action=claim', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   }
 
-  function seedDogs() {
-    const el = $('town-dogs');
-    if (!el) return;
-    for (let i = 0; i < 3; i++) {
-      const d = document.createElement('div');
-      d.className = 'dog';
-      const dur = 8 + Math.random() * 4;
-      d.style.animationDuration = dur + 's';
-      d.style.animationDelay = (-Math.random() * dur) + 's';
-      d.style.bottom = (12 + Math.random() * 10) + '%';
-      d.innerHTML = '<svg viewBox="0 0 24 14"><ellipse cx="12" cy="7" rx="8" ry="4" fill="#2A1208"/><circle cx="19" cy="5" r="3" fill="#2A1208"/><rect x="6" y="10" width="2" height="4" fill="#2A1208"/><rect x="10" y="10" width="2" height="4" fill="#2A1208"/><rect x="14" y="10" width="2" height="4" fill="#2A1208"/><rect x="4" y="4" width="4" height="2" class="tail" fill="#2A1208"/></svg>';
-      el.appendChild(d);
-    }
+  async function editLink(body) {
+    return api('/api/shortlink?action=edit', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   }
 
-  function seedFireflies() {
-    const el = $('forest-fireflies');
-    if (!el) return;
-    for (let i = 0; i < 20; i++) {
-      const f = document.createElement('div');
-      f.style.cssText = `
-        position:absolute;
-        width:4px;height:4px;border-radius:50%;
-        background:rgba(254,243,199,0.95);
-        box-shadow:0 0 8px rgba(254,243,199,1),0 0 16px rgba(245,158,11,0.7);
-        animation:firefly-drift ease-in-out infinite;
-        left:${Math.random() * 100}%;
-        bottom:${30 + Math.random() * 40}%;
-        animation-duration:${6 + Math.random() * 6}s;
-        animation-delay:${-Math.random() * 8}s;
-        z-index:10;
-      `;
-      el.appendChild(f);
-    }
-    // Add keyframes if not present
-    if (!document.getElementById('ff-kf')) {
-      const style = document.createElement('style');
-      style.id = 'ff-kf';
-      style.textContent = `
-        @keyframes firefly-drift{
-          0%{transform:translate(0,0);opacity:0}
-          20%{opacity:1}
-          80%{opacity:1}
-          100%{transform:translate(15vw,-25vh);opacity:0}
-        }
-      `;
-      document.head.appendChild(style);
-    }
+  async function releaseLink(key, pid) {
+    return api('/api/shortlink?action=release&key=' + encodeURIComponent(key), {
+      method: 'DELETE',
+      body: JSON.stringify({ pid }),
+    });
   }
 
-  function seedCamels() {
-    const el = $('desert-camels');
-    if (!el) return;
-    const svg = '<svg viewBox="0 0 60 80"><path d="M20 40 Q15 35 12 30 Q10 25 15 22 Q18 18 22 22 Q25 26 25 32 L25 50 L25 75 L20 75 L20 55 Q18 50 20 40 Z" fill="#2A1208"/><rect x="22" y="20" width="4" height="30" fill="#2A1208"/><rect x="26" y="22" width="4" height="28" fill="#2A1208"/><ellipse cx="40" cy="30" rx="12" ry="8" fill="#2A1208"/><circle cx="50" cy="22" r="5" fill="#2A1208"/><rect x="32" y="30" width="3" height="22" fill="#2A1208"/><rect x="36" y="32" width="3" height="20" fill="#2A1208"/></svg>';
-    for (let i = 0; i < 2; i++) {
-      const c = document.createElement('div');
-      c.style.cssText = `
-        position:absolute;
-        bottom:16%;
-        z-index:11;
-        width:clamp(50px,8vw,100px);
-        height:clamp(40px,6vw,80px);
-        animation:camel-walk linear infinite;
-        animation-duration:${22 + i * 3}s;
-        animation-delay:${-i * 7}s;
-      `;
-      c.innerHTML = svg;
-      el.appendChild(c);
-    }
-    if (!document.getElementById('camel-kf')) {
-      const style = document.createElement('style');
-      style.id = 'camel-kf';
-      style.textContent = `@keyframes camel-walk{from{transform:translateX(-15vw)}to{transform:translateX(115vw)}}`;
-      document.head.appendChild(style);
-    }
-  }
-
-  function seedSavannahAnimals() {
-    const el = $('savannah-animals');
-    if (!el) return;
-    for (let i = 0; i < 2; i++) {
-      const e = document.createElement('div');
-      e.style.cssText = `
-        position:absolute;
-        bottom:22%;
-        z-index:9;
-        width:clamp(80px,14vw,160px);
-        height:clamp(60px,10vw,120px);
-        animation:elephant-walk linear infinite;
-        animation-duration:${28 + i * 5}s;
-        animation-delay:${-i * 10}s;
-      `;
-      e.innerHTML = '<svg viewBox="0 0 100 80" fill="#2A0F04"><ellipse cx="50" cy="55" rx="30" ry="20"/><circle cx="25" cy="35" r="15"/><rect x="30" y="65" width="6" height="15"/><rect x="45" y="65" width="6" height="15"/><rect x="55" y="65" width="6" height="15"/><rect x="70" y="65" width="6" height="15"/></svg>';
-      el.appendChild(e);
-    }
-    if (!document.getElementById('elephant-kf')) {
-      const style = document.createElement('style');
-      style.id = 'elephant-kf';
-      style.textContent = `@keyframes elephant-walk{from{transform:translateX(-20vw)}to{transform:translateX(120vw)}}`;
-      document.head.appendChild(style);
-    }
+  async function fetchInfo(key) {
+    return api('/api/shortlink?action=info&key=' + encodeURIComponent(key));
   }
 
   // ═══════════════════════════════════════════════════════
-  //  TYPEWRITER (info card title)
+  //  TOAST
   // ═══════════════════════════════════════════════════════
-  function typeTitle(text, onDone) {
-    const el = $('info-title');
-    if (!el) return;
-    el.innerHTML = '';
-    let i = 0;
-    function step() {
-      if (i < text.length) {
-        el.innerHTML = escapeHtml(text.slice(0, i + 1)) + '<span class="cursor"></span>';
-        i++;
-        state.typingTimer = setTimeout(step, TYPING_SPEED);
-      } else {
-        el.innerHTML = escapeHtml(text) + '<span class="cursor"></span>';
-        if (onDone) onDone();
-      }
-    }
-    step();
-  }
-
-  function stopTyping() {
-    if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
-    if (state.codeTimer) { clearTimeout(state.codeTimer); state.codeTimer = null; }
+  function toast(message, type = 'info') {
+    const icons = {
+      success: '<polyline points="20 6 9 17 4 12"/>',
+      error: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+      warning: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+      info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    };
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.innerHTML = '<svg viewBox="0 0 24 24">' + (icons[type] || icons.info) + '</svg><span>' + escapeHtml(message) + '</span>';
+    $('toast-container').appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(20px)';
+      setTimeout(() => el.remove(), 300);
+    }, 3500);
   }
 
   function escapeHtml(s) {
@@ -1348,235 +949,984 @@ svg{display:block}
   }
 
   // ═══════════════════════════════════════════════════════
-  //  ★ THE PHONE — code that actually types itself
+  //  AUTH
   // ═══════════════════════════════════════════════════════
-  function startCodeSequence() {
-    const codeEl = $('editor-code');
-    const statusEl = $('editor-status');
-    const filenameEl = $('editor-filename');
-    const terminalEl = $('terminal-output');
-    const deployBtn = $('deploy-btn');
-    const liveBadge = $('live-badge');
+  $('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const key = $('auth-key').value.trim();
+    const base = $('auth-base').value.trim() || 'https://foliosites.vercel.app';
+    if (!key) { showAuthError('Please enter an API key'); return; }
 
-    if (!codeEl) return;
+    state.apiKey = key;
+    state.apiBase = base.replace(/\/$/, '');
 
-    // Reset
-    codeEl.innerHTML = '';
-    terminalEl.textContent = 'Ready.';
-    terminalEl.className = 'terminal-line';
-    statusEl.textContent = 'Editing';
-    filenameEl.textContent = 'index.js';
-    deployBtn.classList.remove('pressed');
-    liveBadge.classList.remove('visible');
+    // Test the key by hitting the domains endpoint (no auth needed) and list (auth needed)
+    $('auth-error').classList.add('hidden');
+    const res = await api('/api/shortlink?action=list&limit=1');
+    if (!res.ok) {
+      showAuthError(res.status === 401 ? 'Invalid API key' : 'Could not connect: ' + (res.data?.error || 'network error'));
+      state.apiKey = '';
+      return;
+    }
 
-    // Build the full code as a list of tokens with their position
-    const flatTokens = [];
-    CODE_TEMPLATE.forEach((line, lineIdx) => {
-      line.tokens.forEach(tok => {
-        flatTokens.push({ ...tok, lineIdx });
+    try { sessionStorage.setItem('shortlink_admin_key', key); } catch {}
+    try { sessionStorage.setItem('shortlink_admin_base', state.apiBase); } catch {}
+
+    $('auth-screen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    await boot();
+  });
+
+  function showAuthError(msg) {
+    const el = $('auth-error');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  $('logout-btn').addEventListener('click', () => {
+    try { sessionStorage.removeItem('shortlink_admin_key'); } catch {}
+    try { sessionStorage.removeItem('shortlink_admin_base'); } catch {}
+    location.reload();
+  });
+
+  // ═══════════════════════════════════════════════════════
+  //  NAV
+  // ═══════════════════════════════════════════════════════
+  document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.currentView = btn.dataset.view;
+      if (state.currentView === 'create') {
+        openCreateModal();
+        // Reset to previous view
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelector('.nav-item[data-view="overview"]').classList.add('active');
+        state.currentView = 'overview';
+      } else {
+        renderView();
+      }
+      if (window.innerWidth <= 900) $('sidebar').classList.remove('open');
+    });
+  });
+
+  $('mobile-menu-btn')?.addEventListener('click', () => {
+    $('sidebar').classList.toggle('open');
+  });
+
+  // ═══════════════════════════════════════════════════════
+  //  VIEW ROUTER
+  // ═══════════════════════════════════════════════════════
+  function renderView() {
+    const content = $('view-content');
+    const views = {
+      overview: renderOverview,
+      links: renderLinks,
+      domains: renderDomains,
+      api: renderApi,
+      settings: renderSettings,
+    };
+    const renderer = views[state.currentView] || renderOverview;
+    content.innerHTML = '';
+    try { renderer(content); } catch (err) { console.error(err); content.innerHTML = '<div class="empty"><div class="empty-title">Error</div><div class="empty-desc">' + escapeHtml(err.message) + '</div></div>'; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIEW: OVERVIEW
+  // ═══════════════════════════════════════════════════════
+  function renderOverview(container) {
+    const totalLinks = state.links.length;
+    const totalClicks = state.links.reduce((sum, l) => sum + (l.clicks || 0), 0);
+    const customLinks = state.links.filter(l => l.strategy === 'custom').length;
+    const thisWeek = state.links.filter(l => l.createdAt && Date.now() - l.createdAt < 7 * 24 * 60 * 60 * 1000).length;
+
+    const topLinks = [...state.links]
+      .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
+      .slice(0, 5);
+
+    const recentLinks = [...state.links]
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 5);
+
+    container.innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="page-title">Overview</div>
+          <div class="page-sub">Your shortlink system at a glance. Live data from ${escapeHtml(state.apiBase)}</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="window.dashboard.refresh()">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <button class="btn btn-primary" onclick="window.dashboard.openCreate()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New link
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total links</div>
+          <div class="stat-value">${totalLinks}</div>
+          <div class="stat-hint">${thisWeek} added this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total clicks</div>
+          <div class="stat-value">${formatNumber(totalClicks)}</div>
+          <div class="stat-hint">across all links</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Custom keys</div>
+          <div class="stat-value">${customLinks}</div>
+          <div class="stat-hint">${totalLinks ? Math.round((customLinks / totalLinks) * 100) : 0}% of all links</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Primary domain</div>
+          <div class="stat-value" style="font-size:16px;font-family:var(--font-mono);letter-spacing:-0.02em">${escapeHtml(state.primaryDomain)}</div>
+          <div class="stat-hint">${state.domains.length} supported domains</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="overview-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              Top links
+            </div>
+          </div>
+          <div class="card-body tight">
+            ${topLinks.length === 0
+              ? '<div class="empty" style="padding:30px 16px"><div class="empty-title">No links yet</div><div class="empty-desc">Create your first link to see stats.</div></div>'
+              : topLinks.map(l => `
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--divider)">
+                  <div style="flex:1;min-width:0">
+                    <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(l.key)}</div>
+                    <div style="font-size:11px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">${escapeHtml(l.url || '')}</div>
+                  </div>
+                  <div style="text-align:right;flex-shrink:0">
+                    <div style="font-size:16px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums">${formatNumber(l.clicks || 0)}</div>
+                    <div style="font-size:10px;color:var(--text-3)">clicks</div>
+                  </div>
+                </div>
+              `).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Recent links
+            </div>
+          </div>
+          <div class="card-body tight">
+            ${recentLinks.length === 0
+              ? '<div class="empty" style="padding:30px 16px"><div class="empty-title">No links yet</div><div class="empty-desc">Create your first link to see activity.</div></div>'
+              : recentLinks.map(l => `
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--divider)">
+                  <div style="flex:1;min-width:0">
+                    <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(l.key)}</div>
+                    <div style="font-size:11px;color:var(--text-3);margin-top:2px">${timeAgo(l.createdAt)}</div>
+                  </div>
+                  <span class="chip neutral">${escapeHtml(l.strategy || 'proj')}</span>
+                </div>
+              `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIEW: LINKS
+  // ═══════════════════════════════════════════════════════
+  function renderLinks(container) {
+    const filtered = filterAndSortLinks();
+
+    container.innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="page-title">Links</div>
+          <div class="page-sub">${state.links.length} total links · ${filtered.length} matching</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="window.dashboard.refresh()">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <button class="btn btn-primary" onclick="window.dashboard.openCreate()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New link
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="search-bar">
+          <input type="text" class="input" id="link-search" placeholder="Search keys, URLs, PIDs..." value="${escapeHtml(state.searchQuery)}">
+          <select class="input" id="link-strategy" style="width:auto;min-width:140px">
+            <option value="">All strategies</option>
+            <option value="custom" ${state.strategy === 'custom' ? 'selected' : ''}>Custom</option>
+            <option value="userproj" ${state.strategy === 'userproj' ? 'selected' : ''}>User + Project</option>
+            <option value="proj" ${state.strategy === 'proj' ? 'selected' : ''}>Project</option>
+          </select>
+          <select class="input" id="link-sort" style="width:auto;min-width:140px">
+            <option value="createdAt" ${state.sortBy === 'createdAt' ? 'selected' : ''}>Newest first</option>
+            <option value="clicks" ${state.sortBy === 'clicks' ? 'selected' : ''}>Most clicks</option>
+            <option value="key" ${state.sortBy === 'key' ? 'selected' : ''}>Alphabetical</option>
+          </select>
+        </div>
+
+        ${filtered.length === 0
+          ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><div class="empty-title">' + (state.links.length === 0 ? 'No links yet' : 'No matches') + '</div><div class="empty-desc">' + (state.links.length === 0 ? 'Create your first shortlink to get started.' : 'Try a different search or filter.') + '</div></div>'
+          : `
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:32px"><input type="checkbox" id="select-all"></th>
+                    <th>Key</th>
+                    <th>Destination</th>
+                    <th>Strategy</th>
+                    <th>Clicks</th>
+                    <th>Created</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="links-tbody">
+                  ${filtered.map(link => renderLinkRow(link)).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination">
+              <div>Showing ${filtered.length} of ${state.links.length} links</div>
+              <div class="pagination-controls">
+                <button class="btn btn-secondary btn-sm" onclick="window.dashboard.refresh()">Refresh data</button>
+              </div>
+            </div>
+          `}
+      </div>
+
+      ${state.selectedLinks.size > 0 ? `
+        <div class="bulk-bar">
+          <span><span class="count">${state.selectedLinks.size}</span> selected</span>
+          <button class="btn btn-danger btn-sm" onclick="window.dashboard.bulkDelete()">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            Delete selected
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="window.dashboard.clearSelection()">Cancel</button>
+        </div>
+      ` : ''}
+    `;
+
+    // Wire search
+    const searchInput = $('link-search');
+    if (searchInput) {
+      let timer;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          state.searchQuery = e.target.value;
+          renderLinks(container);
+        }, 200);
+      });
+    }
+
+    $('link-strategy')?.addEventListener('change', (e) => {
+      state.strategy = e.target.value;
+      renderLinks(container);
+    });
+
+    $('link-sort')?.addEventListener('change', (e) => {
+      state.sortBy = e.target.value;
+      renderLinks(container);
+    });
+
+    $('select-all')?.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        filtered.forEach(l => state.selectedLinks.add(l.key));
+      } else {
+        state.selectedLinks.clear();
+      }
+      renderLinks(container);
+    });
+
+    // Wire row actions
+    container.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        const key = btn.dataset.key;
+        if (action === 'copy') {
+          copyToClipboard('https://' + state.primaryDomain + '/' + key, 'Link copied');
+        } else if (action === 'open') {
+          window.open('https://' + state.primaryDomain + '/' + key, '_blank', 'noopener');
+        } else if (action === 'edit') {
+          openEditModal(key);
+        } else if (action === 'delete') {
+          confirmDelete(key);
+        }
       });
     });
 
-    // Create line containers up front so code appears line by line
-    const lines = CODE_TEMPLATE.map((_, i) => {
-      const lineEl = document.createElement('div');
-      lineEl.className = 'editor-line';
-      const lnEl = document.createElement('span');
-      lnEl.className = 'editor-ln';
-      lnEl.textContent = String(i + 1);
-      const txtEl = document.createElement('span');
-      txtEl.className = 'editor-txt';
-      lineEl.appendChild(lnEl);
-      lineEl.appendChild(txtEl);
-      codeEl.appendChild(lineEl);
-      return txtEl;
+    container.querySelectorAll('[data-check]').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        if (e.target.checked) state.selectedLinks.add(e.target.dataset.check);
+        else state.selectedLinks.delete(e.target.dataset.check);
+        renderLinks(container);
+      });
     });
+  }
 
-    let idx = 0;
-    let currentLineIdx = 0;
+  function renderLinkRow(link) {
+    const isSelected = state.selectedLinks.has(link.key);
+    return `
+      <tr>
+        <td><input type="checkbox" data-check="${escapeHtml(link.key)}" ${isSelected ? 'checked' : ''}></td>
+        <td class="mono strong">${escapeHtml(link.key)}</td>
+        <td class="url-cell"><a href="${escapeHtml(link.url || '')}" target="_blank" rel="noopener" title="${escapeHtml(link.url || '')}">${escapeHtml(link.url || '—')}</a></td>
+        <td><span class="chip ${link.strategy === 'custom' ? 'primary' : 'neutral'}">${escapeHtml(link.strategy || 'proj')}</span></td>
+        <td style="font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">${formatNumber(link.clicks || 0)}</td>
+        <td style="font-size:12px;color:var(--text-3)">${timeAgo(link.createdAt)}</td>
+        <td class="actions">
+          <button class="btn btn-ghost btn-sm" data-action="copy" data-key="${escapeHtml(link.key)}" title="Copy link">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-sm" data-action="open" data-key="${escapeHtml(link.key)}" title="Open">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-sm" data-action="edit" data-key="${escapeHtml(link.key)}" title="Edit">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-sm" data-action="delete" data-key="${escapeHtml(link.key)}" title="Delete" style="color:var(--danger)">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  }
 
-    function typeNextToken() {
-      if (idx >= flatTokens.length) {
-        // Code complete — now run the sequence
-        onCodeComplete();
+  function filterAndSortLinks() {
+    let list = [...state.links];
+
+    if (state.searchQuery) {
+      const q = state.searchQuery.toLowerCase();
+      list = list.filter(l =>
+        (l.key || '').toLowerCase().includes(q) ||
+        (l.url || '').toLowerCase().includes(q) ||
+        (l.pid || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (state.strategy) {
+      list = list.filter(l => l.strategy === state.strategy);
+    }
+
+    if (state.sortBy === 'createdAt') {
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    } else if (state.sortBy === 'clicks') {
+      list.sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
+    } else if (state.sortBy === 'key') {
+      list.sort((a, b) => (a.key || '').localeCompare(b.key || ''));
+    }
+
+    return list;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIEW: DOMAINS
+  // ═══════════════════════════════════════════════════════
+  function renderDomains(container) {
+    container.innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="page-title">Domains</div>
+          <div class="page-sub">Every domain that resolves to the shortlink API.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Supported domains
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="window.dashboard.refreshDomains()">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div class="card-body tight">
+          ${state.domains.length === 0
+            ? '<div class="empty"><div class="empty-title">No domains loaded</div><div class="empty-desc">Try refreshing.</div></div>'
+            : state.domains.map((d, i) => `
+              <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--divider)">
+                <div style="flex:1;min-width:0">
+                  <div class="mono" style="font-size:14px;font-weight:700;color:var(--text)">${escapeHtml(d)}</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px">${d === state.primaryDomain ? 'Primary domain — used in short URLs' : 'Also supported'}</div>
+                </div>
+                ${d === state.primaryDomain ? '<span class="chip primary">Primary</span>' : '<span class="chip neutral">Also supported</span>'}
+                <button class="btn btn-ghost btn-sm" onclick="window.dashboard.copyToClipboard('https://${escapeHtml(d)}/', 'Domain copied')">
+                  <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            `).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">About domains</div>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:12px">
+            Every supported domain resolves to the same shortlink API. When a user visits <code class="mono" style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">https://${escapeHtml(state.primaryDomain)}/{key}</code>, the Vercel rewrite forwards it to <code class="mono" style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">${escapeHtml(state.apiBase)}/api/shortlink?key={key}</code>.
+          </p>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.7">
+            The <strong style="color:var(--text)">primary domain</strong> is used in all generated short URLs. It's controlled by the <code class="mono" style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">SHORT_DOMAIN</code> environment variable on the secondary Vercel project.
+          </p>
+        </div>
+      </div>
+    `;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIEW: API REFERENCE
+  // ═══════════════════════════════════════════════════════
+  function renderApi(container) {
+    const base = state.apiBase;
+    container.innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="page-title">API Reference</div>
+          <div class="page-sub">All shortlink API endpoints. Use these from your own tools, scripts, or the dashboard.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Base URL</div></div>
+        <div class="card-body">
+          <div class="code">
+            <button class="copy-btn" onclick="window.dashboard.copyToClipboard('${escapeHtml(base)}', 'Copied')">Copy</button>${escapeHtml(base)}/api/shortlink</div>
+        </div>
+      </div>
+
+      ${renderEndpoint('Resolve key', 'GET', '?key={key}', 'Public — no auth. Returns { success, data: { url, name, imageUrl, clicks, createdAt } }. 404 if not found, 410 if project removed.', false)}
+      ${renderEndpoint('Link info', 'GET', '?action=info&key={key}', 'Public — no auth. Returns link metadata without incrementing clicks.', false)}
+      ${renderEndpoint('List domains', 'GET', '?action=domains', 'Public — no auth. Returns { primary, domains[] }.', false)}
+      ${renderEndpoint('List all links', 'GET', '?action=list&limit=100&offset=0', 'Admin only. Returns { success, total, links[] }.', true)}
+      ${renderEndpoint('Create link', 'POST', '?action=create', 'Admin. Body: { pid, url, imageUrl?, name? }. Auto-derives key from project slug. Idempotent — reuses existing key if the pid already has one.', true)}
+      ${renderEndpoint('Claim custom key', 'POST', '?action=claim', 'Admin. Body: { pid, url, imageUrl?, name?, baseName, strategy: "custom"|"userproj", confirmed? }. Returns 409 with suggestions if base name is taken.', true)}
+      ${renderEndpoint('Edit key', 'POST', '?action=edit', 'Admin. Body: { pid, newName, confirmed? }. Renames the key without changing the URL. Returns "unchanged" if newName equals current key.', true)}
+      ${renderEndpoint('Release key', 'DELETE', '?action=release&key={key}', 'Admin. Body: { pid }. Removes the key entirely. The key becomes available for reuse.', true)}
+      ${renderEndpoint('Transfer key', 'POST', '?action=transfer', 'Admin only. Body: { fromPid, toPid }. Moves a key from one project to another.', true)}
+    `;
+  }
+
+  function renderEndpoint(name, method, path, description, requiresAuth) {
+    return `
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="chip ${method === 'GET' ? 'success' : method === 'DELETE' ? 'danger' : 'primary'}">${method}</span>
+            ${escapeHtml(name)}
+            ${requiresAuth ? '<span class="chip neutral" style="margin-left:8px">Admin</span>' : '<span class="chip neutral" style="margin-left:8px">Public</span>'}
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="code" style="margin-bottom:12px">
+            <button class="copy-btn" onclick="window.dashboard.copyToClipboard('${escapeHtml(state.apiBase)}/api/shortlink${escapeHtml(path)}', 'Endpoint copied')">Copy</button>${method} ${escapeHtml(state.apiBase)}/api/shortlink${escapeHtml(path)}</div>
+          <p style="font-size:12px;color:var(--text-3);line-height:1.6">${escapeHtml(description)}</p>
+          ${requiresAuth ? '<p style="font-size:11px;color:var(--text-3);margin-top:8px">Requires header: <code class="mono" style="background:var(--bg);padding:1px 5px;border-radius:3px">x-api-key: YOUR_ADMIN_KEY</code></p>' : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIEW: SETTINGS
+  // ═══════════════════════════════════════════════════════
+  function renderSettings(container) {
+    container.innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-sub">Configure your admin session.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">API connection</div></div>
+        <div class="card-body">
+          <div class="field">
+            <label class="field-label">API Base URL</label>
+            <input type="url" class="input mono" id="settings-base" value="${escapeHtml(state.apiBase)}">
+            <div class="field-hint">Where the shortlink API lives. Change this if you move to a custom domain.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Backend Base URL</label>
+            <input type="url" class="input mono" id="settings-backend" value="${escapeHtml(state.backendBase)}">
+            <div class="field-hint">The main Folio app (used for project lookups).</div>
+          </div>
+          <button class="btn btn-primary" onclick="window.dashboard.saveSettings()">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Danger zone</div></div>
+        <div class="card-body">
+          <div class="toggle-row" style="padding:0">
+            <div class="toggle-info">
+              <div class="toggle-title">Sign out</div>
+              <div class="toggle-desc">Clears your API key from this session.</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="window.dashboard.logout()">Sign out</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  MODAL: CREATE
+  // ═══════════════════════════════════════════════════════
+  function openCreateModal() {
+    const modal = $('modal-content');
+    modal.innerHTML = `
+      <div class="modal-header">
+        <div class="modal-title">Create link</div>
+        <button class="modal-close" onclick="window.dashboard.closeModal()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">Project ID</label>
+          <input type="text" class="input mono" id="create-pid" placeholder="p_abc123..." autocomplete="off">
+          <div class="field-hint">The pid of the project this key should point to.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Destination URL</label>
+          <input type="url" class="input mono" id="create-url" placeholder="https://foliosites.vercel.app/username/project/slug/">
+          <div class="field-hint">Where the short link should redirect to.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Key (optional)</label>
+          <input type="text" class="input mono" id="create-key" placeholder="e.g. portfolio">
+          <div class="field-hint">Leave blank to auto-generate from the project slug. Only lowercase letters, digits, 3-30 chars.</div>
+          <div class="field-error hidden" id="create-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.dashboard.closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="create-submit">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create
+        </button>
+      </div>
+    `;
+    $('modal-overlay').classList.add('active');
+    $('create-submit').addEventListener('click', submitCreate);
+    setTimeout(() => $('create-pid').focus(), 100);
+  }
+
+  async function submitCreate() {
+    const pid = $('create-pid').value.trim();
+    const url = $('create-url').value.trim();
+    const key = $('create-key').value.trim().toLowerCase();
+
+    if (!pid || !url) {
+      showFieldError('create-error', 'PID and URL are required');
+      return;
+    }
+
+    if (!/^https:\/\//i.test(url)) {
+      showFieldError('create-error', 'URL must start with https://');
+      return;
+    }
+
+    if (key && !/^[a-z][a-z0-9]{2,29}$/.test(key)) {
+      showFieldError('create-error', 'Key must be 3-30 chars, lowercase letters + digits, starting with a letter');
+      return;
+    }
+
+    const btn = $('create-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div>';
+
+    try {
+      let res;
+      if (key) {
+        res = await claimLink({ pid, url, baseName: key, strategy: 'custom', confirmed: false });
+        if (res.status === 409 && res.data?.suggestions?.length) {
+          // Show suggestions
+          const suggestions = res.data.suggestions;
+          btn.disabled = false;
+          btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Create';
+          const modal = $('modal-content');
+          const body = modal.querySelector('.modal-body');
+          body.innerHTML = `
+            <div style="background:var(--warning-soft);border:1px solid rgba(217,119,6,0.3);padding:16px;border-radius:10px;margin-bottom:16px">
+              <div style="font-size:13px;font-weight:700;color:var(--warning);margin-bottom:4px">"${escapeHtml(key)}" is already taken</div>
+              <div style="font-size:12px;color:var(--text-2);line-height:1.5">Here are the next available keys:</div>
+            </div>
+            ${suggestions.map(s => `
+              <button class="btn btn-secondary" style="width:100%;margin-bottom:8px;justify-content:space-between" onclick="window.dashboard.useSuggestion('${escapeHtml(pid)}', '${escapeHtml(url)}', '${escapeHtml(s)}')">
+                <span class="mono">${escapeHtml(s)}</span>
+                <span style="font-size:11px;color:var(--text-3)">Use this →</span>
+              </button>
+            `).join('')}
+          `;
+          const footer = modal.querySelector('.modal-footer');
+          footer.innerHTML = '<button class="btn btn-secondary" onclick="window.dashboard.closeModal()">Cancel</button>';
+          return;
+        }
+      } else {
+        res = await createLink({ pid, url });
+      }
+
+      if (!res.ok || !res.data?.success) {
+        showFieldError('create-error', res.data?.error || 'Failed to create link');
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Create';
         return;
       }
 
-      const tok = flatTokens[idx];
-      const lineEl = lines[tok.lineIdx];
-
-      // If we moved to a new line, only show lines up to current
-      if (tok.lineIdx !== currentLineIdx) {
-        currentLineIdx = tok.lineIdx;
-      }
-
-      // Append the token
-      const span = document.createElement('span');
-      if (tok.c) span.className = tok.c;
-      span.textContent = tok.t;
-      lineEl.appendChild(span);
-
-      // Add cursor to the current line
-      lines.forEach(l => {
-        const cur = l.querySelector('.cur');
-        if (cur) cur.remove();
-      });
-      if (idx < flatTokens.length - 1) {
-        const cursor = document.createElement('span');
-        cursor.className = 'cur';
-        lineEl.appendChild(cursor);
-      }
-
-      idx++;
-      state.codeTimer = setTimeout(typeNextToken, CODE_TYPING_SPEED);
+      toast('Link created: ' + res.data.key, 'success');
+      closeModal();
+      await refresh();
+    } catch (err) {
+      showFieldError('create-error', err.message);
+      btn.disabled = false;
+      btn.innerHTML = 'Create';
     }
+  }
 
-    typeNextToken();
-
-    function onCodeComplete() {
-      // Remove cursor
-      document.querySelectorAll('.cur').forEach(c => c.remove());
-
-      // Wait a moment, then press Deploy
-      setTimeout(() => {
-        deployBtn.classList.add('pressed');
-        deployBtn.textContent = 'Deploying...';
-        statusEl.textContent = 'Building';
-
-        // Terminal output
-        setTimeout(() => {
-          terminalEl.textContent = '▸ Building...';
-          terminalEl.className = 'terminal-line terminal-prompt';
-        }, 400);
-
-        setTimeout(() => {
-          terminalEl.textContent = '✓ Build complete';
-          terminalEl.className = 'terminal-line terminal-success';
-        }, 1000);
-
-        setTimeout(() => {
-          terminalEl.textContent = '✓ Deployed to folio.xo.je';
-          terminalEl.className = 'terminal-line terminal-success';
-          deployBtn.textContent = 'Deploy';
-          deployBtn.classList.remove('pressed');
-          liveBadge.classList.add('visible');
-          statusEl.textContent = 'Live';
-        }, 1600);
-
-        setTimeout(() => {
-          // Reset for the next scene
-          startCodeSequence();
-        }, 4000);
-
-      }, 600);
+  async function useSuggestion(pid, url, suggestedKey) {
+    const btn = $('create-submit');
+    const res = await claimLink({ pid, url, baseName: suggestedKey.replace(/[0-9]+$/, ''), strategy: 'custom', confirmed: true });
+    if (res.ok && res.data?.success) {
+      toast('Link created: ' + res.data.key, 'success');
+      closeModal();
+      await refresh();
+    } else {
+      toast(res.data?.error || 'Failed to create link', 'error');
     }
   }
 
   // ═══════════════════════════════════════════════════════
-  //  SCENE TRANSITIONS
+  //  MODAL: EDIT
   // ═══════════════════════════════════════════════════════
-  function switchScene(index) {
-    if (index < 0 || index >= SCENES.length) return;
-    const prev = SCENES[state.currentScene];
-    const next = SCENES[index];
-    if (prev && prev.id !== next.id) {
-      const prevEl = $(prev.id);
-      const nextEl = $(next.id);
-      if (prevEl && nextEl) {
-        prevEl.classList.remove('active');
-        nextEl.classList.add('active');
-      }
-    }
-    state.currentScene = index;
-    $('info-eyebrow').textContent = next.eyebrow;
-    $('info-desc').textContent = next.desc;
-    renderProgress();
-    stopTyping();
-    setTimeout(() => typeTitle(next.title), 400);
+  async function openEditModal(key) {
+    const link = state.links.find(l => l.key === key);
+    if (!link) return;
+
+    const modal = $('modal-content');
+    modal.innerHTML = `
+      <div class="modal-header">
+        <div class="modal-title">Edit link</div>
+        <button class="modal-close" onclick="window.dashboard.closeModal()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">Current key</label>
+          <div class="code" style="padding:10px 14px">${escapeHtml(link.key)}</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Destination URL</label>
+          <div class="code" style="padding:10px 14px;word-break:break-all;white-space:pre-wrap">${escapeHtml(link.url || '—')}</div>
+          <div class="field-hint">Changing the destination requires editing the project and redeploying. The shortlink automatically re-points on deploy.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Rename key (optional)</label>
+          <input type="text" class="input mono" id="edit-key" placeholder="newkey" value="${escapeHtml(link.key)}">
+          <div class="field-hint">Lowercase letters and digits, 3-30 chars.</div>
+          <div class="field-error hidden" id="edit-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" onclick="window.dashboard.confirmDelete('${escapeHtml(link.key)}')">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          Delete
+        </button>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary" onclick="window.dashboard.closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="edit-submit">Save</button>
+      </div>
+    `;
+    $('modal-overlay').classList.add('active');
+    $('edit-submit').addEventListener('click', () => submitEdit(link));
   }
 
-  function renderProgress() {
-    const el = $('info-progress');
-    el.innerHTML = '';
-    SCENES.forEach((_, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'dot' + (i < state.currentScene ? ' done' : '') + (i === state.currentScene ? ' active' : '');
-      el.appendChild(dot);
-    });
-  }
-
-  function advance() {
-    const next = state.currentScene + 1;
-    if (next >= SCENES.length) {
-      showFinal();
+  async function submitEdit(link) {
+    const newKey = $('edit-key').value.trim().toLowerCase();
+    if (!newKey || newKey === link.key) {
+      showFieldError('edit-error', 'Enter a different key');
       return;
     }
-    switchScene(next);
-    state.advanceTimer = setTimeout(advance, SCENE_DURATION);
+    if (!/^[a-z][a-z0-9]{2,29}$/.test(newKey)) {
+      showFieldError('edit-error', 'Invalid key format');
+      return;
+    }
+
+    const btn = $('edit-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div>';
+
+    const res = await editLink({
+      pid: link.pid,
+      newName: newKey,
+      confirmed: false,
+    });
+
+    if (res.status === 409 && res.data?.suggestions?.length) {
+      const modal = $('modal-content');
+      const body = modal.querySelector('.modal-body');
+      body.innerHTML = `
+        <div style="background:var(--warning-soft);border:1px solid rgba(217,119,6,0.3);padding:16px;border-radius:10px;margin-bottom:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--warning);margin-bottom:4px">"${escapeHtml(newKey)}" is already taken</div>
+          <div style="font-size:12px;color:var(--text-2)">Pick a numbered version:</div>
+        </div>
+        ${res.data.suggestions.map(s => `
+          <button class="btn btn-secondary" style="width:100%;margin-bottom:8px;justify-content:space-between" onclick="window.dashboard.useSuggestion(${JSON.stringify(link.pid)}, ${JSON.stringify(link.url)}, '${escapeHtml(s)}')">
+            <span class="mono">${escapeHtml(s)}</span>
+            <span style="font-size:11px;color:var(--text-3)">Use this →</span>
+          </button>
+        `).join('')}
+      `;
+      const footer = modal.querySelector('.modal-footer');
+      footer.innerHTML = '<button class="btn btn-secondary" onclick="window.dashboard.closeModal()">Cancel</button>';
+      return;
+    }
+
+    if (!res.ok || !res.data?.success) {
+      showFieldError('edit-error', res.data?.error || 'Failed to edit');
+      btn.disabled = false;
+      btn.innerHTML = 'Save';
+      return;
+    }
+
+    toast('Link renamed to: ' + res.data.key, 'success');
+    closeModal();
+    await refresh();
   }
 
-  function showFinal() {
-    $('info-card').classList.remove('visible');
-    $('skip').classList.add('hidden');
-    $('final-cta').classList.add('visible');
+  // ═══════════════════════════════════════════════════════
+  //  DELETE
+  // ═══════════════════════════════════════════════════════
+  function confirmDelete(key) {
+    const link = state.links.find(l => l.key === key);
+    if (!link) return;
+
+    if (!$('modal-overlay').classList.contains('active')) {
+      const modal = $('modal-content');
+      modal.innerHTML = `
+        <div class="modal-header">
+          <div class="modal-title">Delete link</div>
+          <button class="modal-close" onclick="window.dashboard.closeModal()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--danger-soft);border:1px solid rgba(239,68,68,0.3);border-radius:10px;margin-bottom:16px">
+            <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--danger);fill:none;stroke-width:2.4;flex-shrink:0;margin-top:1px">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:4px">Delete this link?</div>
+              <div style="font-size:12px;color:var(--text-2);line-height:1.5">The short link <code class="mono" style="background:var(--bg);padding:2px 6px;border-radius:4px">${escapeHtml(key)}</code> will stop working. This cannot be undone.</div>
+            </div>
+          </div>
+          <div class="code" style="padding:10px 14px">https://${escapeHtml(state.primaryDomain)}/${escapeHtml(key)}</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="window.dashboard.closeModal()">Cancel</button>
+          <button class="btn btn-danger" id="delete-confirm-btn" onclick="window.dashboard.doDelete('${escapeHtml(key)}', ${JSON.stringify(link.pid)})">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            Delete
+          </button>
+        </div>
+      `;
+      $('modal-overlay').classList.add('active');
+    }
+  }
+
+  async function doDelete(key, pid) {
+    const btn = $('delete-confirm-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div>';
+
+    const res = await releaseLink(key, pid);
+    if (res.ok && res.data?.success) {
+      toast('Link deleted: ' + key, 'success');
+      closeModal();
+      await refresh();
+    } else {
+      toast(res.data?.error || 'Failed to delete', 'error');
+      btn.disabled = false;
+      btn.innerHTML = 'Delete';
+    }
+  }
+
+  async function bulkDelete() {
+    const keys = Array.from(state.selectedLinks);
+    if (!confirm('Delete ' + keys.length + ' link(s)? This cannot be undone.')) return;
+
+    let success = 0;
+    let failed = 0;
+    for (const key of keys) {
+      const link = state.links.find(l => l.key === key);
+      if (!link) continue;
+      const res = await releaseLink(key, link.pid);
+      if (res.ok && res.data?.success) success++;
+      else failed++;
+    }
+
+    state.selectedLinks.clear();
+    if (success > 0) toast('Deleted ' + success + ' link(s)' + (failed > 0 ? ', ' + failed + ' failed' : ''), success > failed ? 'success' : 'warning');
+    else toast('No links deleted', 'error');
+    await refresh();
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  HELPERS
+  // ═══════════════════════════════════════════════════════
+  function showFieldError(id, msg) {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 5000);
+  }
+
+  function closeModal() {
+    $('modal-overlay').classList.remove('active');
+    $('modal-content').innerHTML = '';
+  }
+
+  $('modal-overlay')?.addEventListener('click', (e) => {
+    if (e.target === $('modal-overlay')) closeModal();
+  });
+
+  function formatNumber(n) {
+    if (n == null) return '0';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  function timeAgo(ts) {
+    if (!ts) return '—';
+    const diff = Date.now() - ts;
+    if (diff < 60000) return 'just now';
+    const m = Math.floor(diff / 60000);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    const d = Math.floor(h / 24);
+    if (d < 30) return d + 'd ago';
+    return new Date(ts).toLocaleDateString();
+  }
+
+  function copyToClipboard(text, message) {
+    try {
+      navigator.clipboard.writeText(text);
+      toast(message || 'Copied', 'success');
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast(message || 'Copied', 'success');
+    }
   }
 
   // ═══════════════════════════════════════════════════════
   //  BOOT
   // ═══════════════════════════════════════════════════════
-  function boot() {
-    seedClouds('town-clouds', 3);
-    seedClouds('forest-clouds', 2);
-    seedClouds('desert-clouds', 1);
-    seedClouds('savannah-clouds', 2);
-    seedClouds('city-clouds', 3);
-
-    seedStars();
-    seedWindows('town-windows');
-    seedWindows('city-windows');
-
-    seedPeople('town-people', 10);
-    seedPeople('forest-people', 4);
-    seedPeople('desert-people', 2);
-    seedPeople('savannah-people', 3);
-    seedPeople('city-people', 12);
-
-    seedDogs();
-    seedFireflies();
-    seedCamels();
-    seedSavannahAnimals();
-
-    // First scene
-    $('scene-town').classList.add('active');
-    $('info-eyebrow').textContent = SCENES[0].eyebrow;
-    $('info-desc').textContent = SCENES[0].desc;
-    renderProgress();
-    typeTitle(SCENES[0].title);
-
-    setTimeout(() => {
-      $('info-card').classList.add('visible');
-    }, 500);
-
-    // Start the phone coding animation
-    setTimeout(startCodeSequence, 800);
-
-    // Skip button
-    $('skip').addEventListener('click', () => {
-      stopTyping();
-      if (state.advanceTimer) clearTimeout(state.advanceTimer);
-      switchScene(SCENES.length - 1);
-      setTimeout(showFinal, 300);
-    });
-
-    // Start the cycle
-    state.advanceTimer = setTimeout(advance, SCENE_DURATION);
+  async function refresh() {
+    state.loading = true;
+    await Promise.all([fetchLinks(), fetchDomains()]);
+    state.loading = false;
+    $('badge-links').textContent = state.links.length;
+    renderView();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
+  async function boot() {
+    await refresh();
+    renderView();
   }
+
+  // ═══════════════════════════════════════════════════════
+  //  PUBLIC API (window.dashboard)
+  // ═══════════════════════════════════════════════════════
+  window.dashboard = {
+    refresh: async () => {
+      await fetchLinks();
+      await fetchDomains();
+      $('badge-links').textContent = state.links.length;
+      renderView();
+    },
+    refreshDomains: async () => {
+      await fetchDomains();
+      renderView();
+    },
+    openCreate: () => openCreateModal(),
+    closeModal,
+    confirmDelete,
+    doDelete,
+    bulkDelete,
+    useSuggestion,
+    clearSelection: () => { state.selectedLinks.clear(); renderView(); },
+    copyToClipboard,
+    logout: () => {
+      try { sessionStorage.removeItem('shortlink_admin_key'); } catch {}
+      try { sessionStorage.removeItem('shortlink_admin_base'); } catch {}
+      location.reload();
+    },
+    saveSettings: () => {
+      const base = $('settings-base').value.trim().replace(/\/$/, '');
+      const backend = $('settings-backend').value.trim().replace(/\/$/, '');
+      if (base) { state.apiBase = base; try { sessionStorage.setItem('shortlink_admin_base', base); } catch {} }
+      if (backend) { state.backendBase = backend; }
+      toast('Settings saved', 'success');
+    },
+  };
+
+  // ═══════════════════════════════════════════════════════
+  //  AUTO-LOGIN
+  // ═══════════════════════════════════════════════════════
+  (async function tryAutoLogin() {
+    let savedKey = null, savedBase = null;
+    try { savedKey = sessionStorage.getItem('shortlink_admin_key'); } catch {}
+    try { savedBase = sessionStorage.getItem('shortlink_admin_base'); } catch {}
+
+    if (savedKey) {
+      state.apiKey = savedKey;
+      state.apiBase = savedBase || 'https://foliosites.vercel.app';
+
+      const res = await api('/api/shortlink?action=list&limit=1');
+      if (res.ok) {
+        $('auth-screen').classList.add('hidden');
+        $('app').classList.remove('hidden');
+        await boot();
+        return;
+      }
+      try { sessionStorage.removeItem('shortlink_admin_key'); } catch {}
+    }
+  })();
 
 })();
 </script>
