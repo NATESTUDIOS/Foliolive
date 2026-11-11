@@ -1,0 +1,1585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Folio — Code anywhere, ship from your phone</title>
+<meta name="description" content="Folio is a mobile-first code editor with real deployment, offline support, and a private API runtime.">
+<meta name="theme-color" content="#0a0c10">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://foliosites.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Folio — Code anywhere, ship from your phone">
+<meta property="og:description" content="A mobile-first code editor with real deployment, offline support, and a private API runtime.">
+<meta property="og:image" content="https://foliostudios.vercel.app/icons/icon.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://foliostudios.vercel.app/icons/icon.jpg">
+<link rel="icon" href="https://foliostudios.vercel.app/icons/icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  color-scheme:dark;
+  --bg:#0a0c10;
+  --primary:#F59E0B;
+  --primary-hover:#fbbf24;
+  --primary-glow:rgba(245,158,11,0.4);
+  --text:#e8ecf1;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:16px;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+  user-select:none;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+
+/* ═══════════════════════════════════════════════════════
+   STAGE
+   ═══════════════════════════════════════════════════════ */
+#stage{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  background:#0a0c10;
+}
+
+.scene{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1.2s ease;
+}
+.scene.active{opacity:1}
+
+/* ═══════════════════════════════════════════════════════
+   SKY
+   ═══════════════════════════════════════════════════════ */
+.sky{position:absolute;inset:0;z-index:1}
+
+#scene-town .sky{
+  background:
+    radial-gradient(ellipse 90% 60% at 60% 20%, rgba(255,215,170,0.85) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 45% at 20% 35%, rgba(180,200,240,0.55) 0%, transparent 60%),
+    linear-gradient(180deg, #7C9CB8 0%, #A8B8C8 40%, #E8C8A0 75%, #F4DAB0 100%);
+}
+#scene-forest .sky{
+  background:
+    radial-gradient(ellipse 80% 55% at 40% 25%, rgba(220,240,200,0.6) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 80% 40%, rgba(160,200,180,0.4) 0%, transparent 60%),
+    linear-gradient(180deg, #A8C0C0 0%, #B8D0C0 40%, #D0D8C0 70%, #E8E0C0 100%);
+}
+#scene-desert .sky{
+  background:
+    radial-gradient(ellipse 85% 55% at 50% 15%, rgba(255,240,200,0.95) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 75% 40%, rgba(255,200,140,0.6) 0%, transparent 60%),
+    linear-gradient(180deg, #5BA5C9 0%, #A8C8D8 35%, #F0C890 70%, #F4C070 100%);
+}
+#scene-savannah .sky{
+  background:
+    radial-gradient(ellipse 100% 65% at 30% 50%, rgba(255,150,80,0.85) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 45% at 80% 60%, rgba(255,120,140,0.45) 0%, transparent 60%),
+    linear-gradient(180deg, #C06080 0%, #E89070 35%, #F4B860 70%, #F4D090 100%);
+}
+#scene-city .sky{
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 15%, rgba(80,100,180,0.5) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 85% 40%, rgba(245,158,11,0.2) 0%, transparent 60%),
+    linear-gradient(180deg, #0a0812 0%, #14102a 40%, #1a1a30 70%, #0e1420 100%);
+}
+
+.celestial{
+  position:absolute;
+  border-radius:50%;
+  z-index:2;
+}
+#scene-town .celestial{
+  top:14%;right:20%;width:100px;height:100px;
+  background:radial-gradient(circle at 38% 38%, #FFFEF0 0%, #FFF4C4 40%, #FFD58A 75%, transparent 100%);
+  box-shadow:0 0 100px rgba(255,240,200,0.9),0 0 200px rgba(255,220,150,0.5);
+}
+#scene-forest .celestial{
+  top:12%;right:22%;width:80px;height:80px;
+  background:radial-gradient(circle at 40% 40%, #FFFCF0 0%, #E8F0D0 40%, #C0D0A0 75%, transparent 100%);
+  box-shadow:0 0 80px rgba(220,240,200,0.7);
+}
+#scene-desert .celestial{
+  top:10%;right:25%;width:110px;height:110px;
+  background:radial-gradient(circle at 40% 40%, #FFFBEA 0%, #FFF0B8 35%, #F4A020 75%, transparent 100%);
+  box-shadow:0 0 160px rgba(255,220,140,0.95),0 0 300px rgba(255,180,80,0.6);
+}
+#scene-savannah .celestial{
+  bottom:28%;right:20%;width:120px;height:120px;
+  background:radial-gradient(circle at 40% 40%, #FFE8C0 0%, #FFB060 40%, #E86040 80%, transparent 100%);
+  box-shadow:0 0 140px rgba(255,180,100,0.9),0 0 260px rgba(255,120,80,0.5);
+}
+#scene-city .celestial{
+  top:12%;right:20%;width:70px;height:70px;
+  background:radial-gradient(circle at 38% 38%, #F0F4FF 0%, #C8D8F0 40%, #7A9AC0 80%, transparent 100%);
+  box-shadow:0 0 80px rgba(220,230,255,0.7);
+}
+
+.stars{position:absolute;inset:0;z-index:2;pointer-events:none}
+.star{
+  position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+  animation:twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle{
+  0%,100%{opacity:0.3;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.3)}
+}
+
+.clouds{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}
+.cloud{
+  position:absolute;border-radius:50%;
+  filter:blur(8px);animation:cloud-drift linear infinite;
+}
+@keyframes cloud-drift{
+  from{transform:translateX(-30vw)}
+  to{transform:translateX(130vw)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   GROUND + SCENERY
+   ═══════════════════════════════════════════════════════ */
+#scene-town .far-skyline{
+  position:absolute;bottom:40%;left:-10%;width:120%;height:38%;
+  z-index:4;opacity:0.4;filter:blur(3px);
+}
+#scene-town .far-skyline svg{width:100%;height:100%}
+#scene-town .far-skyline path{fill:#8B95B0}
+
+#scene-town .mid-skyline{
+  position:absolute;bottom:34%;left:-5%;width:110%;height:36%;
+  z-index:5;opacity:0.7;
+}
+#scene-town .mid-skyline svg{width:100%;height:100%}
+#scene-town .mid-skyline path{fill:#6B7080}
+#scene-town .mid-skyline .win{
+  fill:rgba(255,240,200,0.5);
+  animation:win-flicker 5s ease-in-out infinite;
+}
+@keyframes win-flicker{0%,100%{opacity:0.9}50%{opacity:0.5}}
+
+#scene-town .ground{
+  position:absolute;bottom:0;left:0;right:0;height:36%;z-index:6;
+  background:linear-gradient(180deg, rgba(120,110,100,0.9) 0%, rgba(80,70,60,0.95) 40%, #3a3028 100%);
+}
+
+#scene-forest .ground{
+  position:absolute;bottom:0;left:0;right:0;height:38%;z-index:6;
+  background:linear-gradient(180deg, rgba(70,110,60,0.95) 0%, rgba(40,70,35,0.98) 40%, #1a2e18 100%);
+}
+
+#scene-forest .path{
+  position:absolute;bottom:0;left:0;right:0;height:38%;z-index:7;
+  clip-path:polygon(0 100%, 30% 40%, 55% 35%, 80% 42%, 100% 100%);
+  background:linear-gradient(180deg, transparent 0%, rgba(80,60,40,0.5) 40%, rgba(50,35,20,0.9) 100%);
+}
+
+#scene-forest .tree{
+  position:absolute;bottom:30%;z-index:8;
+  width:clamp(50px,8vw,110px);height:clamp(120px,22vw,240px);
+  transform-origin:bottom center;
+  animation:tree-sway 5s ease-in-out infinite;
+}
+#scene-forest .tree:nth-child(odd){animation-delay:-2s}
+@keyframes tree-sway{
+  0%,100%{transform:rotate(-0.8deg)}
+  50%{transform:rotate(0.8deg)}
+}
+#scene-forest .tree svg{width:100%;height:100%}
+
+#scene-desert .dune{
+  position:absolute;left:-10%;right:-10%;
+  border-radius:50% 50% 0 0 / 100% 100% 0 0;
+  z-index:4;
+}
+#scene-desert .dune-1{bottom:38%;height:22%;background:linear-gradient(180deg,#E8A050 0%,#C86A3A 100%);opacity:0.85}
+#scene-desert .dune-2{bottom:26%;height:26%;background:linear-gradient(180deg,#D08840 0%,#A85028 100%);z-index:5}
+#scene-desert .dune-3{bottom:14%;height:30%;background:linear-gradient(180deg,#B06830 0%,#6B2810 100%);z-index:6}
+
+#scene-desert .ground{
+  position:absolute;bottom:0;left:0;right:0;height:22%;z-index:7;
+  background:linear-gradient(180deg,#8B4A20 0%,#3A1408 100%);
+}
+
+#scene-desert .pyramid{
+  position:absolute;bottom:28%;width:0;height:0;
+  border-left:solid transparent;border-right:solid transparent;
+  border-bottom:solid #B85820;z-index:5;
+}
+#scene-desert .pyramid-1{left:8%;border-left-width:40px;border-right-width:40px;border-bottom-width:80px;filter:brightness(0.85)}
+#scene-desert .pyramid-2{left:18%;border-left-width:55px;border-right-width:55px;border-bottom-width:110px}
+#scene-desert .pyramid-3{left:32%;border-left-width:35px;border-right-width:35px;border-bottom-width:70px;filter:brightness(0.9)}
+
+#scene-savannah .ground{
+  position:absolute;bottom:0;left:0;right:0;height:32%;z-index:6;
+  background:linear-gradient(180deg,#E8A850 0%,#B86838 40%,#5A2810 100%);
+}
+#scene-savannah .grass{
+  position:absolute;bottom:0;left:0;right:0;height:32%;z-index:7;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 6px,rgba(60,30,10,0.4) 6px,rgba(60,30,10,0.4) 7px),linear-gradient(180deg, transparent 0%, rgba(60,30,10,0.7) 100%);
+  opacity:0.6;
+}
+#scene-savannah .acacia{
+  position:absolute;bottom:28%;z-index:8;
+  width:clamp(80px,15vw,180px);height:clamp(80px,15vw,180px);
+}
+#scene-savannah .acacia::before{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:8px;height:45%;background:linear-gradient(180deg,#3A2510 0%,#1A0A04 100%);
+}
+#scene-savannah .acacia::after{
+  content:'';position:absolute;top:30%;left:50%;transform:translateX(-50%);
+  width:100%;height:60%;background:radial-gradient(ellipse at center,#2A4A18 0%,#1A3008 60%,transparent 80%);
+  border-radius:50% 50% 30% 30%;filter:blur(1px);
+}
+
+#scene-city .far-skyline{
+  position:absolute;bottom:38%;left:-10%;width:120%;height:38%;
+  z-index:4;opacity:0.4;filter:blur(3px);
+}
+#scene-city .far-skyline svg{width:100%;height:100%}
+#scene-city .far-skyline path{fill:#0a0e1a}
+
+#scene-city .mid-skyline{
+  position:absolute;bottom:32%;left:-5%;width:110%;height:38%;
+  z-index:5;opacity:0.75;
+}
+#scene-city .mid-skyline svg{width:100%;height:100%}
+#scene-city .mid-skyline path{fill:#0f1420}
+#scene-city .mid-skyline .win{
+  fill:rgba(245,158,11,0.7);
+  animation:win-flicker 5s ease-in-out infinite;
+}
+
+#scene-city .ground{
+  position:absolute;bottom:0;left:0;right:0;height:32%;z-index:6;
+  background:linear-gradient(180deg, rgba(20,25,35,0.95) 0%, rgba(10,12,18,1) 40%, #050608 100%);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PEOPLE (background figures)
+   ═══════════════════════════════════════════════════════ */
+.people-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:10;
+}
+
+.person{
+  position:absolute;
+  bottom:8%;
+  width:clamp(10px,1.2vw,16px);
+  height:clamp(24px,3.5vw,40px);
+  animation:person-walk linear infinite;
+  will-change:transform;
+}
+.person svg{width:100%;height:100%}
+
+.person .legs{animation:leg-swing 0.6s steps(2) infinite alternate;transform-origin:top center}
+@keyframes person-walk{
+  from{transform:translateX(-15vw)}
+  to{transform:translateX(115vw)}
+}
+@keyframes leg-swing{
+  from{transform:scaleX(1)}
+  to{transform:scaleX(0.85)}
+}
+
+.dog{
+  position:absolute;
+  bottom:12%;
+  z-index:11;
+  width:clamp(16px,2.2vw,28px);
+  height:clamp(10px,1.4vw,18px);
+  animation:dog-run linear infinite;
+}
+@keyframes dog-run{
+  from{transform:translateX(-15vw)}
+  to{transform:translateX(115vw)}
+}
+.dog svg{width:100%;height:100%}
+.dog .tail{animation:tail-wag 0.4s ease-in-out infinite alternate;transform-origin:bottom left}
+@keyframes tail-wag{
+  from{transform:rotate(-15deg)}
+  to{transform:rotate(20deg)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   ★ THE PHONE — the hero, centered, LARGE
+   ═══════════════════════════════════════════════════════ */
+#phone-stage{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  pointer-events:none;
+}
+
+#phone{
+  position:relative;
+  width:clamp(240px, 38vw, 340px);
+  aspect-ratio: 9 / 19.5;
+  border-radius: clamp(28px, 4vw, 44px);
+  background: #1a1f2a;
+  border: clamp(3px, 0.4vw, 5px) solid #2a3040;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.8),
+    0 30px 80px rgba(0,0,0,0.6),
+    0 0 120px rgba(245,158,11,0.25),
+    inset 0 0 20px rgba(0,0,0,0.4);
+  overflow: hidden;
+  pointer-events: auto;
+  will-change: transform;
+  animation: phone-float 6s ease-in-out infinite;
+}
+@keyframes phone-float{
+  0%,100%{transform: translateY(0) rotate(-1deg)}
+  50%{transform: translateY(-8px) rotate(1deg)}
+}
+
+/* Notch */
+#phone::before{
+  content:'';
+  position:absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32%;
+  height: 20px;
+  background: #0a0c10;
+  border-radius: 0 0 14px 14px;
+  z-index: 10;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.05);
+}
+
+/* Home indicator */
+#phone::after{
+  content:'';
+  position:absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28%;
+  height: 3px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 2px;
+  z-index: 10;
+}
+
+/* Screen */
+#phone-screen{
+  position: absolute;
+  inset: 0;
+  background: #0a0c10;
+  border-radius: inherit;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 28px;
+}
+
+/* Editor header */
+.editor-header{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: #151922;
+  flex-shrink: 0;
+}
+.editor-dots{
+  display: flex;
+  gap: 3px;
+}
+.editor-dot{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.editor-dot:nth-child(1){background:#EF4444}
+.editor-dot:nth-child(2){background:#F59E0B}
+.editor-dot:nth-child(3){background:#10B981}
+.editor-filename{
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(232,236,241,0.5);
+  font-weight: 600;
+  margin-left: 4px;
+}
+.editor-status{
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Code area */
+.editor-code{
+  flex: 1;
+  padding: 10px 8px;
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 1.3vw, 11px);
+  line-height: 1.7;
+  color: rgba(232,236,241,0.85);
+  overflow: hidden;
+  position: relative;
+  background: #0a0c10;
+}
+.editor-line{
+  display: flex;
+  gap: 6px;
+  white-space: pre;
+  min-height: 1.7em;
+}
+.editor-ln{
+  color: rgba(232,236,241,0.25);
+  font-size: 0.9em;
+  flex-shrink: 0;
+  min-width: 16px;
+  text-align: right;
+  user-select: none;
+}
+.editor-txt{
+  flex: 1;
+  overflow: hidden;
+  text-overflow: clip;
+}
+.kw{color:#c084fc}
+.fn{color:#60a5fa}
+.str{color:#86efac}
+.num{color:#fcd34d}
+.op{color:rgba(232,236,241,0.5)}
+.comment{color:rgba(232,236,241,0.3);font-style:italic}
+.cur{
+  display: inline-block;
+  width: 1.5px;
+  height: 1em;
+  background: var(--primary);
+  vertical-align: text-bottom;
+  animation: cur-blink 0.9s steps(2) infinite;
+  margin-left: 1px;
+}
+@keyframes cur-blink{50%{opacity:0}}
+
+/* Terminal output */
+.editor-terminal{
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: #050608;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: clamp(8px, 1.1vw, 9.5px);
+  line-height: 1.6;
+  color: rgba(232,236,241,0.7);
+  min-height: 60px;
+  flex-shrink: 0;
+}
+.terminal-header{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+  font-size: 0.85em;
+  color: rgba(232,236,241,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.terminal-line{
+  color: rgba(232,236,241,0.7);
+  margin-bottom: 1px;
+  white-space: pre-wrap;
+}
+.terminal-success{color:#10B981}
+.terminal-prompt{color:var(--primary)}
+
+/* Footer */
+.editor-footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: #151922;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.deploy-btn{
+  flex: 1;
+  padding: 8px;
+  background: var(--primary);
+  color: #0a0c10;
+  font-size: clamp(9px, 1.2vw, 11px);
+  font-weight: 800;
+  border-radius: 6px;
+  text-align: center;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.deploy-btn.pressed{
+  transform: scale(0.95);
+  box-shadow: 0 0 30px var(--primary-glow);
+}
+.deploy-btn::after{
+  content:'';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: translateX(-100%);
+}
+.deploy-btn.pressed::after{
+  animation: btn-shine 0.6s ease-out;
+}
+@keyframes btn-shine{
+  to { transform: translateX(100%); }
+}
+
+.live-badge{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(16,185,129,0.15);
+  color: #10B981;
+  border-radius: 6px;
+  font-size: clamp(7px, 1vw, 9px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.3s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.live-badge.visible{
+  opacity: 1;
+  transform: scale(1);
+}
+.live-dot{
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  animation: live-pulse 1.5s ease-in-out infinite;
+}
+@keyframes live-pulse{
+  0%,100%{opacity:1}
+  50%{opacity:0.4}
+}
+
+/* ═══════════════════════════════════════════════════════
+   INFO CARD
+   ═══════════════════════════════════════════════════════ */
+#info-card{
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 20px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  max-width: calc(100vw - 32px);
+  width: 500px;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#info-card.visible{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.info-inner{
+  position: relative;
+  background: rgba(15,18,24,0.92);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 40px rgba(245,158,11,0.1);
+  overflow: hidden;
+}
+.info-inner::before{
+  content:'';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+.info-eyebrow{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+.info-eyebrow::before{
+  content:'';
+  width: 14px;
+  height: 1.5px;
+  background: var(--primary);
+}
+.info-title{
+  font-size: clamp(15px, 2vw, 20px);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+  min-height: 1.2em;
+}
+.info-title .cursor{
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--primary);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cur-blink 0.8s steps(2) infinite;
+}
+.info-desc{
+  font-size: clamp(11px, 1.3vw, 12.5px);
+  color: rgba(232,236,241,0.72);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  max-width: 440px;
+}
+.info-footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.info-cta{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--primary);
+  color: #0a0c10;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 9px;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(245,158,11,0.35);
+}
+.info-cta:hover{
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+.info-cta svg{
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.info-progress{
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.info-progress .dot{
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  transition: background 0.3s;
+}
+.info-progress .dot.active{background: var(--primary)}
+.info-progress .dot.done{background: rgba(245,158,11,0.4)}
+
+@media (max-width: 640px){
+  #info-card{width: calc(100vw - 24px)}
+  .info-inner{padding: 14px}
+  .info-desc{font-size: 11px}
+  .info-cta{padding: 7px 12px; font-size: 11px}
+}
+
+/* ═══════════════════════════════════════════════════════
+   FINAL CTA
+   ═══════════════════════════════════════════════════════ */
+#final-cta{
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: rgba(10,12,16,0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 24px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+#final-cta.visible{
+  opacity: 1;
+  pointer-events: auto;
+}
+.final-logo{
+  width: 88px;
+  height: 88px;
+  border-radius: 22px;
+  background: rgba(245,158,11,0.15);
+  border: 2px solid rgba(245,158,11,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 0 80px rgba(245,158,11,0.4);
+  animation: final-pulse 3s ease-in-out infinite;
+}
+@keyframes final-pulse{
+  0%,100%{box-shadow: 0 0 80px rgba(245,158,11,0.4)}
+  50%{box-shadow: 0 0 120px rgba(245,158,11,0.6)}
+}
+.final-logo img{
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  border-radius: 16px;
+}
+.final-title{
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  max-width: 16ch;
+}
+.final-sub{
+  font-size: clamp(14px, 2vw, 17px);
+  font-weight: 500;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 28px;
+  max-width: 32ch;
+  line-height: 1.5;
+}
+.final-url{
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.8vw, 15px);
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+}
+.final-cta-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  background: var(--primary);
+  color: #0a0c10;
+  font-size: clamp(14px, 1.9vw, 16px);
+  font-weight: 800;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 40px rgba(245,158,11,0.4);
+  text-decoration: none;
+}
+.final-cta-btn:hover{
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+.final-cta-btn svg{
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.final-tagline{
+  margin-top: 18px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SKIP
+   ═══════════════════════════════════════════════════════ */
+#skip{
+  position: fixed;
+  top: calc(var(--safe-top) + 16px);
+  right: 16px;
+  z-index: 60;
+  padding: 8px 16px;
+  background: rgba(10,12,16,0.7);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+#skip:hover{
+  background: rgba(10,12,16,0.9);
+  color: #fff;
+  border-color: rgba(245,158,11,0.5);
+}
+#skip.hidden{opacity: 0; pointer-events: none}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  #phone{animation: none}
+}
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- ═══════════════════════════════════════════════════
+       SCENE 1 — TOWN
+       ═══════════════════════════════════════════════════ -->
+  <div class="scene active" id="scene-town">
+    <div class="sky"></div>
+    <div class="celestial"></div>
+    <div class="clouds" id="town-clouds"></div>
+
+    <div class="far-skyline">
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
+        <path d="M0,400 L0,180 L40,180 L40,140 L80,140 L80,200 L120,200 L120,120 L160,120 L160,240 L200,240 L200,160 L240,160 L240,100 L280,100 L280,180 L320,180 L320,140 L360,140 L360,220 L400,220 L400,160 L440,160 L440,80 L480,80 L480,160 L520,160 L520,120 L560,120 L560,180 L600,180 L600,100 L640,100 L640,160 L680,160 L680,140 L720,140 L720,200 L760,200 L760,120 L800,120 L800,180 L840,180 L840,100 L880,100 L880,160 L920,160 L920,140 L960,140 L960,200 L1000,200 L1000,120 L1040,120 L1040,180 L1080,180 L1080,160 L1120,160 L1120,140 L1160,140 L1160,200 L1200,200 L1200,400 Z"/>
+      </svg>
+    </div>
+    <div class="mid-skyline">
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
+        <path d="M0,400 L0,240 L50,240 L50,180 L100,180 L100,220 L150,220 L150,140 L200,140 L200,200 L250,200 L250,120 L300,120 L300,180 L350,180 L350,150 L400,150 L400,220 L450,220 L450,130 L500,130 L500,200 L550,200 L550,170 L600,170 L600,220 L650,220 L650,150 L700,150 L700,210 L750,210 L750,180 L800,180 L800,220 L850,220 L850,140 L900,140 L900,200 L950,200 L950,160 L1000,160 L1000,220 L1050,220 L1050,180 L1100,180 L1100,200 L1150,200 L1150,170 L1200,170 L1200,400 Z"/>
+        <g id="town-windows"></g>
+      </svg>
+    </div>
+
+    <div class="ground"></div>
+
+    <div class="people-layer" id="town-people"></div>
+    <div id="town-dogs"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCENE 2 — FOREST
+       ═══════════════════════════════════════════════════ -->
+  <div class="scene" id="scene-forest">
+    <div class="sky"></div>
+    <div class="celestial"></div>
+    <div class="clouds" id="forest-clouds"></div>
+
+    <div class="ground"></div>
+    <div class="path"></div>
+
+    <div class="tree" style="left:8%;">
+      <svg viewBox="0 0 40 100"><polygon points="20,0 35,30 5,30" fill="#1a3010"/><polygon points="20,15 40,50 0,50" fill="#1a3010"/><polygon points="20,35 42,75 0,75" fill="#1a3010"/><polygon points="20,55 44,95 0,95" fill="#1a3010"/><rect x="18" y="90" width="4" height="10" fill="#3a2010"/></svg>
+    </div>
+    <div class="tree" style="left:85%;transform:scale(0.9);">
+      <svg viewBox="0 0 40 100"><polygon points="20,0 35,30 5,30" fill="#1a3010"/><polygon points="20,15 40,50 0,50" fill="#1a3010"/><polygon points="20,35 42,75 0,75" fill="#1a3010"/><polygon points="20,55 44,95 0,95" fill="#1a3010"/><rect x="18" y="90" width="4" height="10" fill="#3a2010"/></svg>
+    </div>
+
+    <div class="people-layer" id="forest-people"></div>
+    <div id="forest-fireflies"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCENE 3 — DESERT
+       ═══════════════════════════════════════════════════ -->
+  <div class="scene" id="scene-desert">
+    <div class="sky"></div>
+    <div class="celestial"></div>
+    <div class="clouds" id="desert-clouds"></div>
+
+    <div class="dune dune-1"></div>
+    <div class="dune dune-2"></div>
+    <div class="dune dune-3"></div>
+
+    <div class="pyramid pyramid-1"></div>
+    <div class="pyramid pyramid-2"></div>
+    <div class="pyramid pyramid-3"></div>
+
+    <div class="ground"></div>
+
+    <div class="people-layer" id="desert-people"></div>
+    <div id="desert-camels"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCENE 4 — SAVANNAH
+       ═══════════════════════════════════════════════════ -->
+  <div class="scene" id="scene-savannah">
+    <div class="sky"></div>
+    <div class="celestial"></div>
+    <div class="clouds" id="savannah-clouds"></div>
+
+    <div class="ground"></div>
+    <div class="grass"></div>
+
+    <div class="acacia" style="left:15%;"></div>
+    <div class="acacia" style="left:65%;transform:scale(0.8);"></div>
+    <div class="acacia" style="left:88%;transform:scale(0.6);"></div>
+
+    <div class="people-layer" id="savannah-people"></div>
+    <div id="savannah-animals"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCENE 5 — CITY
+       ═══════════════════════════════════════════════════ -->
+  <div class="scene" id="scene-city">
+    <div class="sky"></div>
+    <div class="stars" id="city-stars"></div>
+    <div class="celestial"></div>
+    <div class="clouds" id="city-clouds"></div>
+
+    <div class="far-skyline">
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
+        <path d="M0,400 L0,180 L40,180 L40,140 L80,140 L80,200 L120,200 L120,120 L160,120 L160,240 L200,240 L200,160 L240,160 L240,100 L280,100 L280,180 L320,180 L320,140 L360,140 L360,220 L400,220 L400,160 L440,160 L440,80 L480,80 L480,160 L520,160 L520,120 L560,120 L560,180 L600,180 L600,100 L640,100 L640,160 L680,160 L680,140 L720,140 L720,200 L760,200 L760,120 L800,120 L800,180 L840,180 L840,100 L880,100 L880,160 L920,160 L920,140 L960,140 L960,200 L1000,200 L1000,120 L1040,120 L1040,180 L1080,180 L1080,160 L1120,160 L1120,140 L1160,140 L1160,200 L1200,200 L1200,400 Z"/>
+      </svg>
+    </div>
+    <div class="mid-skyline">
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax meet">
+        <path d="M0,400 L0,240 L50,240 L50,180 L100,180 L100,220 L150,220 L150,140 L200,140 L200,200 L250,200 L250,120 L300,120 L300,180 L350,180 L350,150 L400,150 L400,220 L450,220 L450,130 L500,130 L500,200 L550,200 L550,170 L600,170 L600,220 L650,220 L650,150 L700,150 L700,210 L750,210 L750,180 L800,180 L800,220 L850,220 L850,140 L900,140 L900,200 L950,200 L950,160 L1000,160 L1000,220 L1050,220 L1050,180 L1100,180 L1100,200 L1150,200 L1150,170 L1200,170 L1200,400 Z"/>
+        <g id="city-windows"></g>
+      </svg>
+    </div>
+
+    <div class="ground"></div>
+
+    <div class="people-layer" id="city-people"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       THE PHONE — centered over every scene, LARGE
+       ═══════════════════════════════════════════════════ -->
+  <div id="phone-stage">
+    <div id="phone">
+      <div id="phone-screen">
+
+        <!-- Editor header -->
+        <div class="editor-header">
+          <div class="editor-dots">
+            <div class="editor-dot"></div>
+            <div class="editor-dot"></div>
+            <div class="editor-dot"></div>
+          </div>
+          <div class="editor-filename" id="editor-filename">index.js</div>
+          <div class="editor-status" id="editor-status">Editing</div>
+        </div>
+
+        <!-- Code area (filled by JS) -->
+        <div class="editor-code" id="editor-code"></div>
+
+        <!-- Terminal output (filled by JS) -->
+        <div class="editor-terminal" id="editor-terminal">
+          <div class="terminal-header">
+            <span>●</span> terminal
+          </div>
+          <div class="terminal-line" id="terminal-output">Ready.</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="editor-footer">
+          <div class="deploy-btn" id="deploy-btn">Deploy</div>
+          <div class="live-badge" id="live-badge">
+            <span class="live-dot"></span>
+            <span>LIVE</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     INFO CARD
+     ═══════════════════════════════════════════════════════ -->
+<div id="info-card">
+  <div class="info-inner">
+    <div class="info-eyebrow" id="info-eyebrow">Scene 01 / Town</div>
+    <div class="info-title" id="info-title"></div>
+    <div class="info-desc" id="info-desc"></div>
+    <div class="info-footer">
+      <a class="info-cta" href="https://foliostudios.vercel.app" target="_blank" rel="noopener">
+        Open Folio
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <div class="info-progress" id="info-progress"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FINAL CTA
+     ═══════════════════════════════════════════════════════ -->
+<div id="final-cta">
+  <div class="final-logo">
+    <img src="https://foliostudios.vercel.app/icons/icon.jpg" alt="Folio">
+  </div>
+  <div class="final-title">Your whole dev setup, in your pocket.</div>
+  <div class="final-sub">Code anywhere. Ship from your phone. Build real websites without a laptop.</div>
+  <div class="final-url">folio.xo.je</div>
+  <a href="https://foliostudios.vercel.app" class="final-cta-btn" target="_blank" rel="noopener">
+    Open Folio
+    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </a>
+  <div class="final-tagline">No setup. No laptop. Just code.</div>
+</div>
+
+<!-- SKIP -->
+<button id="skip" aria-label="Skip to the end">Skip →</button>
+
+<script>
+(function(){
+  'use strict';
+
+  const FOLIO_URL = 'https://foliostudios.vercel.app';
+  const SCENE_DURATION = 9000;
+  const TYPING_SPEED = 28;
+  const CODE_TYPING_SPEED = 32;
+
+  // Scene metadata
+  const SCENES = [
+    {
+      id: 'scene-town',
+      eyebrow: 'Scene 01 / Town',
+      title: 'Code from anywhere.',
+      desc: 'Open a project in a café, on a bench, or in the back seat of a taxi. Folio works wherever you are.',
+    },
+    {
+      id: 'scene-forest',
+      eyebrow: 'Scene 02 / Forest',
+      title: 'Works offline.',
+      desc: 'Deep in the woods with no signal? Keep coding. Folio stores everything locally and syncs when you reconnect.',
+    },
+    {
+      id: 'scene-desert',
+      eyebrow: 'Scene 03 / Desert',
+      title: 'Deploy in seconds.',
+      desc: 'A desert research station, a remote village, a safari camp — the live site goes up the moment you hit Deploy.',
+    },
+    {
+      id: 'scene-savannah',
+      eyebrow: 'Scene 04 / Savannah',
+      title: 'Real projects. Real users.',
+      desc: 'Folio powers portfolios, storefronts, and full web apps on phones across three continents.',
+    },
+    {
+      id: 'scene-city',
+      eyebrow: 'Scene 05 / City',
+      title: 'Ship from your phone.',
+      desc: 'The build pipeline, the deploy pipeline, the API runtime — all running from a device that fits in your pocket.',
+    },
+  ];
+
+  // Real code that types itself — a working greet function
+  const CODE_TEMPLATE = [
+    { tokens: [{t:'const',c:'kw'},{t:' ',c:''},{t:'greet',c:'fn'},{t:' ',c:''},{t:'=',c:'op'},{t:' ',c:''},{t:'(',c:'op'},{t:')',c:'op'},{t:' ',c:''},{t:'=>',c:'op'},{t:' ',c:''},{t:'{',c:'op'}] },
+    { tokens: [{t:'  ',c:''},{t:'return',c:'kw'},{t:' ',c:''},{t:'`Hello, ',c:'str'},{t:'${name}',c:'op'},{t:'!`',c:'str'},{t:';',c:'op'}] },
+    { tokens: [{t:'}',c:'op'},{t:';',c:'op'}] },
+    { tokens: [{t:'',c:''}] },
+    { tokens: [{t:'greet',c:'fn'},{t:'(',c:'op'},{t:'"world"',c:'str'},{t:')',c:'op'},{t:';',c:'op'}] },
+  ];
+
+  const state = {
+    currentScene: 0,
+    typingTimer: null,
+    codeTimer: null,
+    advanceTimer: null,
+  };
+
+  const $ = id => document.getElementById(id);
+
+  // ═══════════════════════════════════════════════════════
+  //  SEEDING
+  // ═══════════════════════════════════════════════════════
+  function seedStars() {
+    const el = $('city-stars');
+    if (!el) return;
+    for (let i = 0; i < 70; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top = (Math.random() * 55) + '%';
+      s.style.animationDelay = (Math.random() * 4) + 's';
+      s.style.animationDuration = (3 + Math.random() * 3) + 's';
+      if (Math.random() < 0.3) { s.style.width='1px'; s.style.height='1px'; }
+      el.appendChild(s);
+    }
+  }
+
+  function seedClouds(id, count) {
+    const el = $(id);
+    if (!el) return;
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'cloud';
+      c.style.top = (5 + Math.random() * 35) + '%';
+      const w = 220 + Math.random() * 280;
+      c.style.width = w + 'px';
+      c.style.height = (w * 0.28) + 'px';
+      c.style.background = 'radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 50%, transparent 80%)';
+      c.style.animationDuration = (70 + Math.random() * 50) + 's';
+      c.style.animationDelay = (-Math.random() * 90) + 's';
+      el.appendChild(c);
+    }
+  }
+
+  function seedWindows(id) {
+    const el = $(id);
+    if (!el) return;
+    for (let i = 0; i < 30; i++) {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', (Math.random() * 1200).toFixed(0));
+      rect.setAttribute('y', (140 + Math.random() * 240).toFixed(0));
+      rect.setAttribute('width', '3');
+      rect.setAttribute('height', '5');
+      rect.setAttribute('class', 'win');
+      rect.style.animationDelay = (Math.random() * 5) + 's';
+      rect.style.animationDuration = (4 + Math.random() * 4) + 's';
+      el.appendChild(rect);
+    }
+  }
+
+  function personSvg() {
+    return `<svg viewBox="0 0 10 30">
+      <circle cx="5" cy="3" r="2.8" fill="#1a1418"/>
+      <rect x="3" y="6" width="4" height="11" rx="1.5" fill="#1a1418"/>
+      <rect x="3.2" y="17" width="1.6" height="11" fill="#1a1418" class="legs"/>
+      <rect x="5.2" y="17" width="1.6" height="11" fill="#1a1418"/>
+    </svg>`;
+  }
+
+  function seedPeople(id, count) {
+    const el = $(id);
+    if (!el) return;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'person';
+      const dur = 14 + Math.random() * 12;
+      p.style.animationDuration = dur + 's';
+      p.style.animationDelay = (-Math.random() * dur) + 's';
+      p.style.transform = `scale(${0.65 + Math.random() * 0.55})`;
+      p.style.bottom = (3 + Math.random() * 22) + '%';
+      p.innerHTML = personSvg();
+      el.appendChild(p);
+    }
+  }
+
+  function seedDogs() {
+    const el = $('town-dogs');
+    if (!el) return;
+    for (let i = 0; i < 3; i++) {
+      const d = document.createElement('div');
+      d.className = 'dog';
+      const dur = 8 + Math.random() * 4;
+      d.style.animationDuration = dur + 's';
+      d.style.animationDelay = (-Math.random() * dur) + 's';
+      d.style.bottom = (12 + Math.random() * 10) + '%';
+      d.innerHTML = '<svg viewBox="0 0 24 14"><ellipse cx="12" cy="7" rx="8" ry="4" fill="#2A1208"/><circle cx="19" cy="5" r="3" fill="#2A1208"/><rect x="6" y="10" width="2" height="4" fill="#2A1208"/><rect x="10" y="10" width="2" height="4" fill="#2A1208"/><rect x="14" y="10" width="2" height="4" fill="#2A1208"/><rect x="4" y="4" width="4" height="2" class="tail" fill="#2A1208"/></svg>';
+      el.appendChild(d);
+    }
+  }
+
+  function seedFireflies() {
+    const el = $('forest-fireflies');
+    if (!el) return;
+    for (let i = 0; i < 20; i++) {
+      const f = document.createElement('div');
+      f.style.cssText = `
+        position:absolute;
+        width:4px;height:4px;border-radius:50%;
+        background:rgba(254,243,199,0.95);
+        box-shadow:0 0 8px rgba(254,243,199,1),0 0 16px rgba(245,158,11,0.7);
+        animation:firefly-drift ease-in-out infinite;
+        left:${Math.random() * 100}%;
+        bottom:${30 + Math.random() * 40}%;
+        animation-duration:${6 + Math.random() * 6}s;
+        animation-delay:${-Math.random() * 8}s;
+        z-index:10;
+      `;
+      el.appendChild(f);
+    }
+    // Add keyframes if not present
+    if (!document.getElementById('ff-kf')) {
+      const style = document.createElement('style');
+      style.id = 'ff-kf';
+      style.textContent = `
+        @keyframes firefly-drift{
+          0%{transform:translate(0,0);opacity:0}
+          20%{opacity:1}
+          80%{opacity:1}
+          100%{transform:translate(15vw,-25vh);opacity:0}
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  function seedCamels() {
+    const el = $('desert-camels');
+    if (!el) return;
+    const svg = '<svg viewBox="0 0 60 80"><path d="M20 40 Q15 35 12 30 Q10 25 15 22 Q18 18 22 22 Q25 26 25 32 L25 50 L25 75 L20 75 L20 55 Q18 50 20 40 Z" fill="#2A1208"/><rect x="22" y="20" width="4" height="30" fill="#2A1208"/><rect x="26" y="22" width="4" height="28" fill="#2A1208"/><ellipse cx="40" cy="30" rx="12" ry="8" fill="#2A1208"/><circle cx="50" cy="22" r="5" fill="#2A1208"/><rect x="32" y="30" width="3" height="22" fill="#2A1208"/><rect x="36" y="32" width="3" height="20" fill="#2A1208"/></svg>';
+    for (let i = 0; i < 2; i++) {
+      const c = document.createElement('div');
+      c.style.cssText = `
+        position:absolute;
+        bottom:16%;
+        z-index:11;
+        width:clamp(50px,8vw,100px);
+        height:clamp(40px,6vw,80px);
+        animation:camel-walk linear infinite;
+        animation-duration:${22 + i * 3}s;
+        animation-delay:${-i * 7}s;
+      `;
+      c.innerHTML = svg;
+      el.appendChild(c);
+    }
+    if (!document.getElementById('camel-kf')) {
+      const style = document.createElement('style');
+      style.id = 'camel-kf';
+      style.textContent = `@keyframes camel-walk{from{transform:translateX(-15vw)}to{transform:translateX(115vw)}}`;
+      document.head.appendChild(style);
+    }
+  }
+
+  function seedSavannahAnimals() {
+    const el = $('savannah-animals');
+    if (!el) return;
+    for (let i = 0; i < 2; i++) {
+      const e = document.createElement('div');
+      e.style.cssText = `
+        position:absolute;
+        bottom:22%;
+        z-index:9;
+        width:clamp(80px,14vw,160px);
+        height:clamp(60px,10vw,120px);
+        animation:elephant-walk linear infinite;
+        animation-duration:${28 + i * 5}s;
+        animation-delay:${-i * 10}s;
+      `;
+      e.innerHTML = '<svg viewBox="0 0 100 80" fill="#2A0F04"><ellipse cx="50" cy="55" rx="30" ry="20"/><circle cx="25" cy="35" r="15"/><rect x="30" y="65" width="6" height="15"/><rect x="45" y="65" width="6" height="15"/><rect x="55" y="65" width="6" height="15"/><rect x="70" y="65" width="6" height="15"/></svg>';
+      el.appendChild(e);
+    }
+    if (!document.getElementById('elephant-kf')) {
+      const style = document.createElement('style');
+      style.id = 'elephant-kf';
+      style.textContent = `@keyframes elephant-walk{from{transform:translateX(-20vw)}to{transform:translateX(120vw)}}`;
+      document.head.appendChild(style);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  TYPEWRITER (info card title)
+  // ═══════════════════════════════════════════════════════
+  function typeTitle(text, onDone) {
+    const el = $('info-title');
+    if (!el) return;
+    el.innerHTML = '';
+    let i = 0;
+    function step() {
+      if (i < text.length) {
+        el.innerHTML = escapeHtml(text.slice(0, i + 1)) + '<span class="cursor"></span>';
+        i++;
+        state.typingTimer = setTimeout(step, TYPING_SPEED);
+      } else {
+        el.innerHTML = escapeHtml(text) + '<span class="cursor"></span>';
+        if (onDone) onDone();
+      }
+    }
+    step();
+  }
+
+  function stopTyping() {
+    if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
+    if (state.codeTimer) { clearTimeout(state.codeTimer); state.codeTimer = null; }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  ★ THE PHONE — code that actually types itself
+  // ═══════════════════════════════════════════════════════
+  function startCodeSequence() {
+    const codeEl = $('editor-code');
+    const statusEl = $('editor-status');
+    const filenameEl = $('editor-filename');
+    const terminalEl = $('terminal-output');
+    const deployBtn = $('deploy-btn');
+    const liveBadge = $('live-badge');
+
+    if (!codeEl) return;
+
+    // Reset
+    codeEl.innerHTML = '';
+    terminalEl.textContent = 'Ready.';
+    terminalEl.className = 'terminal-line';
+    statusEl.textContent = 'Editing';
+    filenameEl.textContent = 'index.js';
+    deployBtn.classList.remove('pressed');
+    liveBadge.classList.remove('visible');
+
+    // Build the full code as a list of tokens with their position
+    const flatTokens = [];
+    CODE_TEMPLATE.forEach((line, lineIdx) => {
+      line.tokens.forEach(tok => {
+        flatTokens.push({ ...tok, lineIdx });
+      });
+    });
+
+    // Create line containers up front so code appears line by line
+    const lines = CODE_TEMPLATE.map((_, i) => {
+      const lineEl = document.createElement('div');
+      lineEl.className = 'editor-line';
+      const lnEl = document.createElement('span');
+      lnEl.className = 'editor-ln';
+      lnEl.textContent = String(i + 1);
+      const txtEl = document.createElement('span');
+      txtEl.className = 'editor-txt';
+      lineEl.appendChild(lnEl);
+      lineEl.appendChild(txtEl);
+      codeEl.appendChild(lineEl);
+      return txtEl;
+    });
+
+    let idx = 0;
+    let currentLineIdx = 0;
+
+    function typeNextToken() {
+      if (idx >= flatTokens.length) {
+        // Code complete — now run the sequence
+        onCodeComplete();
+        return;
+      }
+
+      const tok = flatTokens[idx];
+      const lineEl = lines[tok.lineIdx];
+
+      // If we moved to a new line, only show lines up to current
+      if (tok.lineIdx !== currentLineIdx) {
+        currentLineIdx = tok.lineIdx;
+      }
+
+      // Append the token
+      const span = document.createElement('span');
+      if (tok.c) span.className = tok.c;
+      span.textContent = tok.t;
+      lineEl.appendChild(span);
+
+      // Add cursor to the current line
+      lines.forEach(l => {
+        const cur = l.querySelector('.cur');
+        if (cur) cur.remove();
+      });
+      if (idx < flatTokens.length - 1) {
+        const cursor = document.createElement('span');
+        cursor.className = 'cur';
+        lineEl.appendChild(cursor);
+      }
+
+      idx++;
+      state.codeTimer = setTimeout(typeNextToken, CODE_TYPING_SPEED);
+    }
+
+    typeNextToken();
+
+    function onCodeComplete() {
+      // Remove cursor
+      document.querySelectorAll('.cur').forEach(c => c.remove());
+
+      // Wait a moment, then press Deploy
+      setTimeout(() => {
+        deployBtn.classList.add('pressed');
+        deployBtn.textContent = 'Deploying...';
+        statusEl.textContent = 'Building';
+
+        // Terminal output
+        setTimeout(() => {
+          terminalEl.textContent = '▸ Building...';
+          terminalEl.className = 'terminal-line terminal-prompt';
+        }, 400);
+
+        setTimeout(() => {
+          terminalEl.textContent = '✓ Build complete';
+          terminalEl.className = 'terminal-line terminal-success';
+        }, 1000);
+
+        setTimeout(() => {
+          terminalEl.textContent = '✓ Deployed to folio.xo.je';
+          terminalEl.className = 'terminal-line terminal-success';
+          deployBtn.textContent = 'Deploy';
+          deployBtn.classList.remove('pressed');
+          liveBadge.classList.add('visible');
+          statusEl.textContent = 'Live';
+        }, 1600);
+
+        setTimeout(() => {
+          // Reset for the next scene
+          startCodeSequence();
+        }, 4000);
+
+      }, 600);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  SCENE TRANSITIONS
+  // ═══════════════════════════════════════════════════════
+  function switchScene(index) {
+    if (index < 0 || index >= SCENES.length) return;
+    const prev = SCENES[state.currentScene];
+    const next = SCENES[index];
+    if (prev && prev.id !== next.id) {
+      const prevEl = $(prev.id);
+      const nextEl = $(next.id);
+      if (prevEl && nextEl) {
+        prevEl.classList.remove('active');
+        nextEl.classList.add('active');
+      }
+    }
+    state.currentScene = index;
+    $('info-eyebrow').textContent = next.eyebrow;
+    $('info-desc').textContent = next.desc;
+    renderProgress();
+    stopTyping();
+    setTimeout(() => typeTitle(next.title), 400);
+  }
+
+  function renderProgress() {
+    const el = $('info-progress');
+    el.innerHTML = '';
+    SCENES.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i < state.currentScene ? ' done' : '') + (i === state.currentScene ? ' active' : '');
+      el.appendChild(dot);
+    });
+  }
+
+  function advance() {
+    const next = state.currentScene + 1;
+    if (next >= SCENES.length) {
+      showFinal();
+      return;
+    }
+    switchScene(next);
+    state.advanceTimer = setTimeout(advance, SCENE_DURATION);
+  }
+
+  function showFinal() {
+    $('info-card').classList.remove('visible');
+    $('skip').classList.add('hidden');
+    $('final-cta').classList.add('visible');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  BOOT
+  // ═══════════════════════════════════════════════════════
+  function boot() {
+    seedClouds('town-clouds', 3);
+    seedClouds('forest-clouds', 2);
+    seedClouds('desert-clouds', 1);
+    seedClouds('savannah-clouds', 2);
+    seedClouds('city-clouds', 3);
+
+    seedStars();
+    seedWindows('town-windows');
+    seedWindows('city-windows');
+
+    seedPeople('town-people', 10);
+    seedPeople('forest-people', 4);
+    seedPeople('desert-people', 2);
+    seedPeople('savannah-people', 3);
+    seedPeople('city-people', 12);
+
+    seedDogs();
+    seedFireflies();
+    seedCamels();
+    seedSavannahAnimals();
+
+    // First scene
+    $('scene-town').classList.add('active');
+    $('info-eyebrow').textContent = SCENES[0].eyebrow;
+    $('info-desc').textContent = SCENES[0].desc;
+    renderProgress();
+    typeTitle(SCENES[0].title);
+
+    setTimeout(() => {
+      $('info-card').classList.add('visible');
+    }, 500);
+
+    // Start the phone coding animation
+    setTimeout(startCodeSequence, 800);
+
+    // Skip button
+    $('skip').addEventListener('click', () => {
+      stopTyping();
+      if (state.advanceTimer) clearTimeout(state.advanceTimer);
+      switchScene(SCENES.length - 1);
+      setTimeout(showFinal, 300);
+    });
+
+    // Start the cycle
+    state.advanceTimer = setTimeout(advance, SCENE_DURATION);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+})();
+</script>
+
+</body>
+</html>
