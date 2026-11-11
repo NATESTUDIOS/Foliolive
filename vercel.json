@@ -15,12 +15,20 @@
       "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=:path*"
     },
     {
-      "source": "/:username([a-z0-9_-]+)",
-      "destination": "https://foliostudios.vercel.app/api/host?action=profile&username=:username"
+      "source": "/:username([a-z0-9_-]+)/:project([a-z0-9_-]+)/",
+      "destination": "https://foliostudios.vercel.app/api/host?action=share&username=:username&project=:project"
     },
     {
       "source": "/:username([a-z0-9_-]+)/:project([a-z0-9_-]+)",
       "destination": "https://foliostudios.vercel.app/api/host?action=share&username=:username&project=:project"
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)/",
+      "destination": "https://foliostudios.vercel.app/api/host?action=profile&username=:username"
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)",
+      "destination": "https://foliostudios.vercel.app/api/host?action=profile&username=:username"
     }
   ],
   "headers": [
@@ -28,12 +36,29 @@
       "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/api/:route([a-z0-9_-]+)",
       "headers": [
         { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     },
     {
       "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/:path*",
       "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)/:project([a-z0-9_-]+)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=60, s-maxage=60" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=60, s-maxage=60" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
