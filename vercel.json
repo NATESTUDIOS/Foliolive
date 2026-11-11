@@ -15,11 +15,11 @@
       "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=:path*"
     },
     {
-      "source": "/:username([a-z0-9_-]+)/:project([a-z0-9_-]+)/",
+      "source": "/:username([a-z0-9_-]+)/:project((?!project$)[a-z0-9_-]+)/",
       "destination": "https://foliostudios.vercel.app/api/host?action=share&username=:username&project=:project"
     },
     {
-      "source": "/:username([a-z0-9_-]+)/:project([a-z0-9_-]+)",
+      "source": "/:username([a-z0-9_-]+)/:project((?!project$)[a-z0-9_-]+)",
       "destination": "https://foliostudios.vercel.app/api/host?action=share&username=:username&project=:project"
     },
     {
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "source": "/:username([a-z0-9_-]+)/:project([a-z0-9_-]+)",
+      "source": "/:username([a-z0-9_-]+)/:project((?!project$)[a-z0-9_-]+)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=60, s-maxage=60" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
