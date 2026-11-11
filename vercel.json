@@ -4,31 +4,31 @@
   "rewrites": [
     {
       "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/api/:route([a-z0-9_-]+)",
-      "destination": "https://foliostudios.vercel.app/api/run?username=:username&project=:projectname&route=:route"
+      "destination": "/api/proxy?__kind=run&username=:username&project=:projectname&route=:route"
     },
     {
       "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/",
-      "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=index.html"
+      "destination": "/api/proxy?__kind=serve&username=:username&project=:projectname&path=index.html"
     },
     {
       "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/:path*",
-      "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=:path*"
+      "destination": "/api/proxy?__kind=serve&username=:username&project=:projectname&path=:path*"
     },
     {
       "source": "/:username([a-z0-9_-]+)/:project((?!project$)[a-z0-9_-]+)/",
-      "destination": "https://foliostudios.vercel.app/api/host?action=share&username=:username&project=:project"
+      "destination": "/api/proxy?__kind=share&username=:username&project=:project"
     },
     {
       "source": "/:username([a-z0-9_-]+)/:project((?!project$)[a-z0-9_-]+)",
-      "destination": "https://foliostudios.vercel.app/api/host?action=share&username=:username&project=:project"
+      "destination": "/api/proxy?__kind=share&username=:username&project=:project"
     },
     {
       "source": "/:username([a-z0-9_-]+)/",
-      "destination": "https://foliostudios.vercel.app/api/host?action=profile&username=:username"
+      "destination": "/api/proxy?__kind=profile&username=:username"
     },
     {
       "source": "/:username([a-z0-9_-]+)",
-      "destination": "https://foliostudios.vercel.app/api/host?action=profile&username=:username"
+      "destination": "/api/proxy?__kind=profile&username=:username"
     }
   ],
   "headers": [
