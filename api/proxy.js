@@ -2,33 +2,30 @@
 // ═══════════════════════════════════════════════════════════════════
 //  Folio — live-site proxy
 //  ────────────────────────────────────────────────────────────────
-//  Forwards every public-site request to the main app, preserving
-//  method, body, headers, and status.
+//  Forwards public-site requests to the main app, preserving method,
+//  body, and headers — and rewriting any absolute Location headers
+//  so the browser never leaves foliosites.vercel.app.
 //
 //  Why a function and not a cross-domain rewrite?
-//    Vercel's `rewrites` to another domain are GET-only. POST bodies
-//    are dropped. That broke every `api/run` call from the live site.
-//    This function proxies both verbs correctly.
-//
-//  Routing:
-//    /{username}/project/{slug}/api/{route}   → /api/run
-//    /{username}/project/{slug}/…             → /api/host?action=serve
-//    /{username}/{slug}                       → /api/host?action=share
-//    /{username}                              → /api/host?action=profile
-//
-//  The rewrite rules in vercel.json forward to this function with a
-//  `__kind` query param describing which destination to hit, plus the
-//  parsed segments.
+//    Vercel's `rewrites` to another origin are GET-only (POST bodies
+//    are dropped) and don't rewrite Location headers (browser jumps
+//    to the editor domain). This function handles both.
 // ═══════════════════════════════════════════════════════════════════
 
 const MAIN_BASE =
   process.env.BASE_URL || "https://foliostudios.vercel.app";
 
+const LIVE_HOST =
+  process.env.PUBLIC_SITE_BASE || "https://foliosites.vercel.app";
+
 export const config = { runtime: "nodejs" };
 
-// Headers we must not forward — hop-by-hop or dangerous.
+// Hop-by-hop and dangerous headers — never forward either direction.
+// Note: we DO forward `host`. That's what makes handleServe's
+// requestOrigin (req.headers.host) resolve to the live domain,
+// so 301s from previousUsernames / previousSlugs / private-to-public
+// stay on foliosites.vercel.app.
 const STRIP_REQUEST_HEADERS = new Set([
-  "host",
   "connection",
   "content-length",
   "transfer-encoding",
@@ -56,7 +53,6 @@ function buildTarget(kind, query) {
         project: query.project || "",
         route: query.route || "",
       });
-      // Preserve recursion depth + caller for internal chain calls
       if (query["x-recursion-depth"]) qs.set("x-recursion-depth", query["x-recursion-depth"]);
       return `${MAIN_BASE}/api/run?${qs.toString()}`;
     }
@@ -67,7 +63,6 @@ function buildTarget(kind, query) {
         project: query.project || "",
         path: query.path || "index.html",
       });
-      // Preserve ?from= for historical deployment previews
       if (query.from) qs.set("from", query.from);
       if (query.v) qs.set("v", query.v);
       if (query.download) qs.set("download", query.download);
@@ -104,6 +99,30 @@ async function readRequestBody(req) {
   }
 }
 
+// Rewrite an absolute Location header so it stays on the live domain.
+// - Editor → live domain prefix swap.
+// - Already-live URLs pass through untouched.
+// - Relative URLs pass through untouched.
+function rewriteLocation(location) {
+  if (!location || typeof location !== "string") return location;
+  const editorHost = (() => {
+    try { return new URL(MAIN_BASE).host; } catch { return null; }
+  })();
+  const liveBase = (() => {
+    try { return new URL(LIVE_HOST).origin; } catch { return "https://foliosites.vercel.app"; }
+  })();
+
+  try {
+    const u = new URL(location, liveBase);
+    if (editorHost && u.host === editorHost) {
+      return liveBase + u.pathname + (u.search || "") + (u.hash || "");
+    }
+    return location;
+  } catch {
+    return location;
+  }
+}
+
 export default async function handler(req, res) {
   const kind = String(req.query?.__kind || "").trim();
   const target = buildTarget(kind, req.query || {});
@@ -119,6 +138,11 @@ export default async function handler(req, res) {
     if (Array.isArray(v)) headers[k] = v.join(", ");
     else if (typeof v === "string") headers[k] = v;
   }
+
+  // Ensure the upstream sees the live host, not the proxy's local host
+  headers["host"] = (() => {
+    try { return new URL(LIVE_HOST).host; } catch { return "foliosites.vercel.app"; }
+  })();
 
   const body = await readRequestBody(req);
   if (body !== undefined && !headers["content-type"]) {
@@ -147,15 +171,20 @@ export default async function handler(req, res) {
   res.status(upstream.status);
 
   upstream.headers.forEach((value, key) => {
-    if (STRIP_RESPONSE_HEADERS.has(key.toLowerCase())) return;
+    const lower = key.toLowerCase();
+    if (STRIP_RESPONSE_HEADERS.has(lower)) return;
+    if (lower === "location") return; // handled below
     res.setHeader(key, value);
   });
 
-  // Redirects — pass through untouched (needed for offline redirects,
-  // slug rename 301s, private→live-site redirects).
+  // ── Redirects — rewrite Location so it stays on the live domain
   if (upstream.status >= 300 && upstream.status < 400) {
     const loc = upstream.headers.get("location");
-    if (loc) res.setHeader("Location", loc);
+    if (loc) {
+      const rewritten = rewriteLocation(loc);
+      res.setHeader("Location", rewritten);
+    }
+    res.setHeader("Content-Length", "0");
     return res.end();
   }
 
