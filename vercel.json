@@ -1,0 +1,58 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/",
+      "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=index.html"
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)",
+      "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=index.html"
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/api/:route([a-z0-9_-]+)",
+      "destination": "https://foliostudios.vercel.app/api/run?username=:username&project=:projectname&route=:route"
+    },
+    {
+      "source": "/:username((?!api$|_next$|icons$|screenshots$|js$|css$|syntax\\.json$|manifest\\.json$|manifest\\.webmanifest$|browserconfig\\.xml$|sw\\.js$|service-worker\\.js$|firebase-messaging-sw\\.js$|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$|install\\.js$|update\\.js$|fcm-client\\.js$|notifications\\.js$|.*\\.html$|ai$|register$|profile$|project$|tools$|settings$|analytics$|offline$|invite$|notifications$|p$)[^/]+)/project/:projectname/:path*",
+      "destination": "https://foliostudios.vercel.app/api/host?action=serve&username=:username&project=:projectname&path=:path*"
+    },
+    {
+      "source": "/:key([a-z][a-z0-9]{2,29})",
+      "destination": "https://foliostudios.vercel.app/api/shortlink?key=:key"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/:key([a-z][a-z0-9]{2,29})",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=60, s-maxage=300" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/api/:route([a-z0-9_-]+)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/:username([a-z0-9_-]+)/project/:projectname([a-z0-9_-]+)/:path*",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" }
+      ]
+    }
+  ]
+}
